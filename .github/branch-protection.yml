@@ -1,0 +1,77 @@
+# Branch Protection Configuration
+# This file documents the branch protection rules for our sophisticated branching strategy
+
+branches:
+  main:
+    protection:
+      required_status_checks:
+        strict: true
+        contexts:
+          - "quality-gates"
+          - "deploy-production"
+      enforce_admins: true
+      required_pull_request_reviews:
+        required_approving_review_count: 2
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: true
+        require_last_push_approval: true
+      restrictions:
+        users: []
+        teams: []
+      required_linear_history: true
+      allow_force_pushes: false
+      allow_deletions: false
+      block_creations: true
+      required_conversation_resolution: true
+
+  staging:
+    protection:
+      required_status_checks:
+        strict: true
+        contexts:
+          - "quality-gates"
+          - "deploy-staging"
+      enforce_admins: false
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: false
+      restrictions:
+        users: []
+        teams: []
+      required_linear_history: false
+      allow_force_pushes: false
+      allow_deletions: false
+      block_creations: false
+
+  develop:
+    protection:
+      required_status_checks:
+        strict: true
+        contexts:
+          - "quality-gates"
+          - "deploy-development"
+      enforce_admins: false
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: false
+        require_code_owner_reviews: false
+      restrictions:
+        users: []
+        teams: []
+      required_linear_history: false
+      allow_force_pushes: false
+      allow_deletions: false
+      block_creations: false
+
+# Code Owners Configuration
+# This ensures specific people review changes to critical files
+codeowners:
+  - path: "server.js"
+    owners: ["@senior-developers"]
+  - path: ".github/workflows/"
+    owners: ["@devops-team"]
+  - path: "package.json"
+    owners: ["@senior-developers", "@devops-team"]
+  - path: "Dockerfile"
+    owners: ["@devops-team"]
