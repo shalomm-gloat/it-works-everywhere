@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Generate changelog from git commits
+          echo "## What's Changed" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+
+          # Get commits since last tag
+          git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --oneline --no-merges | \
+          while read line; do
+            echo "- $line" >> CHANGELOG.md
+          done
+
+          echo "" >> CHANGELOG.md
+          echo "## Release Information" >> CHANGELOG.md
+          echo "- **Version:** ${{ github.ref_name }}" >> CHANGELOG.md
+          echo "- **Release Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> CHANGELOG.md
+          echo "- **Commit:** ${{ github.sha }}" >> CHANGELOG.md
+
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sbom
+          path: ./sbom
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+
+      - name: Upload SBOM to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./sbom/sbom.spdx.json
+          asset_name: sbom.spdx.json
+          asset_content_type: application/json
+
+      - name: Notify stakeholders
+        run: |
+          echo "## 🎉 Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Release:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ✅ Published" >> $GITHUB_STEP_SUMMARY
+          echo "**Container:** ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**SBOM:** ✅ Attached" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Deploy to production" >> $GITHUB_STEP_SUMMARY
+          echo "- Monitor application health" >> $GITHUB_STEP_SUMMARY
+          echo "- Update documentation" >> $GITHUB_STEP_SUMMARY

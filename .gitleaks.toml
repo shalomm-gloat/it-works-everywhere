@@ -1,0 +1,53 @@
+# Gitleaks configuration for secret detection
+[allowlist]
+description = "Allowlist for false positives"
+paths = [
+    '''\.md$''',
+    '''\.txt$''',
+    '''\.json$''',
+    '''\.yaml$''',
+    '''\.yml$''',
+    '''\.toml$''',
+    '''\.lock$''',
+    '''\.log$''',
+    '''node_modules/''',
+    '''coverage/''',
+    '''__tests__/''',
+    '''\.test\.js$''',
+    '''\.spec\.js$''',
+    '''jest\.config\.js$'''
+]
+
+commits = [
+    "allowlisted-commit-hash"
+]
+
+regexes = [
+    '''(?i)(test|example|sample|demo).*key''',
+    '''(?i)(test|example|sample|demo).*password''',
+    '''(?i)(test|example|sample|demo).*secret''',
+    '''(?i)(test|example|sample|demo).*token'''
+]
+
+[detectors]
+# Enable all detectors
+use-default = true
+
+# Custom rules for specific patterns
+[[detectors.rules]]
+id = "custom-api-key"
+description = "Custom API key pattern"
+regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"]?[a-zA-Z0-9]{32,}['"]?'''
+tags = ["key", "api"]
+
+[[detectors.rules]]
+id = "custom-jwt-token"
+description = "JWT token pattern"
+regex = '''eyJ[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*'''
+tags = ["jwt", "token"]
+
+[[detectors.rules]]
+id = "custom-password"
+description = "Password in code"
+regex = '''(?i)(password|passwd|pwd)\s*[:=]\s*['"][^'"]{8,}['"]'''
+tags = ["password", "credential"]
