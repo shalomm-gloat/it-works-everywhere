@@ -8,7 +8,7 @@ A Node.js Express microservice demonstrating **production-ready CI/CD practices*
 
 - **✅ Public GitHub Repository**: Complete source code with proper version control
 - **✅ Comprehensive CI/CD Pipeline**: GitHub Actions with quality gates
-- **✅ Production-Ready Deployment**: Docker containerization with GitHub Container Registry
+- **✅ Production-Ready Deployment**: Docker containerization with Docker Hub
 - **✅ Automated Testing**: Unit tests, linting, and health checks
 - **✅ Security Scanning**: Vulnerability scanning and dependency auditing
 

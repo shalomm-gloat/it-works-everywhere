@@ -7,7 +7,7 @@ This guide covers the deployment process for **Phase 1: Setup & Foundation** of 
 ## 🎯 What's Deployed
 
 - **Node.js Express microservice** with health endpoint
-- **Docker container** pushed to GitHub Container Registry
+- **Docker container** pushed to Docker Hub
 - **Automated CI/CD pipeline** with quality gates
 - **Production-ready** configuration
 

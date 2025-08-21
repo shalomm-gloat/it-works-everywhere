@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: docker.io
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/it-works-on-my-machine
 
 jobs:
   test:
@@ -39,9 +39,9 @@ jobs:
 
     - name: Run health check
       run: |
-        chmod +x test.sh
         yarn start &
-        sleep 5
+        sleep 3
+        chmod +x test.sh
         ./test.sh
         pkill -f "node server.js"
 
