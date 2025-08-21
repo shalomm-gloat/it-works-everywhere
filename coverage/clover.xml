@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1755777977437" clover="3.2.0">
+  <project timestamp="1755777977437" name="All files">
+    <metrics statements="36" coveredstatements="30" conditionals="12" coveredconditionals="5" methods="8" coveredmethods="7" elements="56" coveredelements="42" complexity="0" loc="36" ncloc="36" packages="1" files="1" classes="1"/>
+    <file name="server.js" path="/Users/shalom.m/Downloads/it-works-on-my-machine/server.js">
+      <metrics statements="36" coveredstatements="30" conditionals="12" coveredconditionals="5" methods="8" coveredmethods="7"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="6" count="1" type="stmt"/>
+      <line num="9" count="1" type="stmt"/>
+      <line num="10" count="1" type="stmt"/>
+      <line num="13" count="1" type="stmt"/>
+      <line num="14" count="11" type="stmt"/>
+      <line num="15" count="11" type="stmt"/>
+      <line num="17" count="11" type="stmt"/>
+      <line num="18" count="11" type="stmt"/>
+      <line num="19" count="11" type="stmt"/>
+      <line num="24" count="11" type="stmt"/>
+      <line num="28" count="1" type="stmt"/>
+      <line num="29" count="4" type="stmt"/>
+      <line num="30" count="4" type="stmt"/>
+      <line num="40" count="1" type="stmt"/>
+      <line num="41" count="5" type="stmt"/>
+      <line num="42" count="5" type="stmt"/>
+      <line num="54" count="5" type="stmt"/>
+      <line num="55" count="5" type="stmt"/>
+      <line num="59" count="1" type="stmt"/>
+      <line num="60" count="1" type="stmt"/>
+      <line num="71" count="1" type="stmt"/>
+      <line num="72" count="1" type="stmt"/>
+      <line num="73" count="1" type="stmt"/>
+      <line num="83" count="1" type="stmt"/>
+      <line num="84" count="1" type="stmt"/>
+      <line num="91" count="1" type="cond" truecount="1" falsecount="1"/>
+      <line num="92" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="93" count="0" type="stmt"/>
+      <line num="94" count="0" type="stmt"/>
+      <line num="95" count="0" type="stmt"/>
+      <line num="96" count="0" type="stmt"/>
+      <line num="97" count="0" type="stmt"/>
+      <line num="101" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>
