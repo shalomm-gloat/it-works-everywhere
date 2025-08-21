@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1755777977437" clover="3.2.0">
-  <project timestamp="1755777977437" name="All files">
+<coverage generated="1755778352399" clover="3.2.0">
+  <project timestamp="1755778352399" name="All files">
     <metrics statements="36" coveredstatements="30" conditionals="12" coveredconditionals="5" methods="8" coveredmethods="7" elements="56" coveredelements="42" complexity="0" loc="36" ncloc="36" packages="1" files="1" classes="1"/>
     <file name="server.js" path="/Users/shalom.m/Downloads/it-works-on-my-machine/server.js">
       <metrics statements="36" coveredstatements="30" conditionals="12" coveredconditionals="5" methods="8" coveredmethods="7"/>
