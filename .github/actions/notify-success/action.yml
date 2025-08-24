@@ -80,7 +80,11 @@ runs:
           - Branch: ${{ github.ref_name }}
           - Commit: ${{ github.sha }}
           - Environment: ${{ inputs.environment }}
-          - URL: ${{ inputs.environment == 'production' && 'https://myprod.getthemilkshake.com' || inputs.environment == 'staging' && 'https://mystaging.getthemilkshake.com' || 'https://mydev.getthemilkshake.com' }}
+          - URL: ${{ 
+            inputs.environment == 'production' && 'https://myprod.getthemilkshake.com' || 
+            inputs.environment == 'staging' && 'https://mystaging.getthemilkshake.com' || 
+            'https://mydev.getthemilkshake.com' 
+          }}
           
           🎉 All quality gates passed and deployment completed successfully!
           
