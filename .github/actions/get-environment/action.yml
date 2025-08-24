@@ -1,0 +1,33 @@
+name: 'Get Environment'
+description: 'Determine target environment based on branch or workflow dispatch'
+
+inputs:
+  workflow-dispatch-env:
+    description: 'Environment from workflow_dispatch input'
+    required: false
+    default: ''
+
+outputs:
+  environment:
+    description: 'Determined environment'
+    value: ${{ steps.env.outputs.environment }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Determine environment
+      id: env
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          ENV="${{ inputs.workflow-dispatch-env }}"
+        elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          ENV="production"
+        elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+          ENV="staging"
+        else
+          ENV="development"
+        fi
+        
+        echo "environment=$ENV" >> $GITHUB_OUTPUT
+        echo "🎯 Determined environment: $ENV"

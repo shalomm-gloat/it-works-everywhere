@@ -1,7 +1,7 @@
 # Makefile for It Works On My Machine
 # Standard development targets for local development
 
-.PHONY: help install test lint build run clean docker-build docker-run docker-push health-check
+.PHONY: help install test lint build run clean docker-build docker-run docker-push health-check health-check-enhanced release-patch release-minor release-major version
 
 # Default target
 help:
@@ -16,6 +16,11 @@ help:
 	@echo "  docker-run   - Run Docker container"
 	@echo "  docker-push  - Push Docker image to registry"
 	@echo "  health-check - Check application health"
+	@echo "  health-check-enhanced - Enhanced health check with rollback logic"
+	@echo "  release-patch - Create patch release"
+	@echo "  release-minor - Create minor release"
+	@echo "  release-major - Create major release"
+	@echo "  version - Show version information"
 
 # Install dependencies
 install:
@@ -71,10 +76,35 @@ docker-push:
 # Check application health
 health-check:
 	@echo "Checking application health..."
-	@curl -f http://localhost:3000/health || (echo "Health check failed" && exit 1)
-	@echo "Health check passed"
-	@curl -s http://localhost:3000/metrics | grep -q "http_requests_total" || (echo "Metrics check failed" && exit 1)
-	@echo "Metrics check passed"
+	@chmod +x test.sh
+	@./test.sh
+
+# Enhanced health check with rollback logic
+health-check-enhanced:
+	@echo "Running enhanced health check with rollback logic..."
+	@chmod +x scripts/health-check.sh
+	@./scripts/health-check.sh
+
+# Version management
+release-patch:
+	@echo "Creating patch release..."
+	@chmod +x scripts/version-manager.sh
+	@./scripts/version-manager.sh patch
+
+release-minor:
+	@echo "Creating minor release..."
+	@chmod +x scripts/version-manager.sh
+	@./scripts/version-manager.sh minor
+
+release-major:
+	@echo "Creating major release..."
+	@chmod +x scripts/version-manager.sh
+	@./scripts/version-manager.sh major
+
+version:
+	@echo "Showing version information..."
+	@chmod +x scripts/version-manager.sh
+	@./scripts/version-manager.sh version
 
 # Development workflow
 dev: install lint test build

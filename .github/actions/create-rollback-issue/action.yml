@@ -1,0 +1,58 @@
+name: 'Create Rollback Issue'
+description: 'Create GitHub issue for rollback tracking'
+
+inputs:
+  version:
+    description: 'Version rolled back to'
+    required: true
+  environment:
+    description: 'Environment that was rolled back'
+    required: true
+  reason:
+    description: 'Reason for rollback'
+    required: true
+  registry:
+    description: 'Docker registry URL'
+    required: true
+  image-name:
+    description: 'Docker image name'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Create rollback issue
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `🔄 Rollback to ${{ inputs.version }}`,
+            body: `## Rollback Summary
+            
+            **Version**: ${{ inputs.version }}
+            **Environment**: ${{ inputs.environment }}
+            **Reason**: ${{ inputs.reason }}
+            **Triggered by**: ${context.actor}
+            **Timestamp**: ${new Date().toISOString()}
+            
+            **Rollback Image**: ${{ inputs.registry }}/${{ inputs.image-name }}:${{ inputs.version }}-rollback
+            
+            ## Next Steps
+            - [ ] Investigate root cause of issues
+            - [ ] Fix issues in development
+            - [ ] Test fixes thoroughly
+            - [ ] Plan next deployment`,
+            labels: ['rollback', 'urgent', 'deployment']
+          });
+
+    - name: Notify rollback
+      shell: bash
+      run: |
+        echo "🚨 ROLLBACK EXECUTED!"
+        echo "Version: ${{ inputs.version }}"
+        echo "Environment: ${{ inputs.environment }}"
+        echo "Reason: ${{ inputs.reason }}"
+        echo "Triggered by: ${{ github.actor }}"
+        echo "Image: ${{ inputs.registry }}/${{ inputs.image-name }}:${{ inputs.version }}-rollback"

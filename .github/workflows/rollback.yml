@@ -1,0 +1,66 @@
+name: Emergency Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to rollback to (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        default: 'Health check failures'
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/it-works-on-my-machine
+
+jobs:
+  rollback:
+    name: Rollback to ${{ github.event.inputs.version }}
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Validate and checkout version
+      uses: ./.github/actions/validate-version
+      with:
+        version: ${{ github.event.inputs.version }}
+
+    - name: Build rollback image
+      uses: ./.github/actions/docker-build
+      with:
+        registry: ${{ env.REGISTRY }}
+        image-name: ${{ env.IMAGE_NAME }}
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Deploy rollback
+      uses: ./.github/actions/rollback-deploy
+      with:
+        version: ${{ github.event.inputs.version }}
+        environment: ${{ github.event.inputs.environment }}
+        reason: ${{ github.event.inputs.reason }}
+        registry: ${{ env.REGISTRY }}
+        image-name: ${{ env.IMAGE_NAME }}
+
+    - name: Create rollback issue
+      uses: ./.github/actions/create-rollback-issue
+      with:
+        version: ${{ github.event.inputs.version }}
+        environment: ${{ github.event.inputs.environment }}
+        reason: ${{ github.event.inputs.reason }}
+        registry: ${{ env.REGISTRY }}
+        image-name: ${{ env.IMAGE_NAME }}

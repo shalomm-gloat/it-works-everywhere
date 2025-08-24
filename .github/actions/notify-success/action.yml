@@ -1,0 +1,65 @@
+name: 'Notify Success'
+description: 'Send success notifications for deployment'
+
+inputs:
+  environment:
+    description: 'Environment that was deployed'
+    required: true
+  registry:
+    description: 'Docker registry URL'
+    required: true
+  image-name:
+    description: 'Docker image name'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Notify deployment success
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const environment = '${{ inputs.environment }}';
+          const environmentName = environment.charAt(0).toUpperCase() + environment.slice(1);
+          
+          // Create deployment notification
+          const message = `✅ **${environmentName} Deployment Successful**
+          
+          **Repository**: ${context.repo.owner}/${context.repo.repo}
+          **Branch**: ${context.ref_name}
+          **Commit**: ${context.sha.substring(0, 7)}
+          **Triggered by**: ${context.actor}
+          **Image**: ${{ inputs.registry }}/${{ inputs.image-name }}:${context.sha.substring(0, 7)}
+          
+          🎉 All checks passed and ${environment} deployment completed successfully!`;
+          
+          // Log notification
+          console.log('📢 DEPLOYMENT NOTIFICATION:');
+          console.log(message);
+          
+          // Create GitHub comment for tracking
+          if (context.eventName === 'push') {
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: message
+            });
+          }
+          
+          // Send email notification to PR author
+          if (context.eventName === 'pull_request') {
+            const prAuthor = context.payload.pull_request.user.login;
+            const prAuthorEmail = context.payload.pull_request.user.email || `${prAuthor}@users.noreply.github.com`;
+            
+            console.log(`📧 Sending success email to: ${prAuthorEmail}`);
+            
+            // In a real implementation, you would send an email here
+            // For now, we'll log the email details
+            const emailSubject = `✅ ${environmentName} Deployment Successful - ${context.repo.repo}`;
+            const emailBody = `Hello ${prAuthor},\n\nYour deployment to ${environmentName} environment has completed successfully!\n\n**Details:**\n- Repository: ${context.repo.owner}/${context.repo.repo}\n- Branch: ${context.ref_name}\n- Commit: ${context.sha.substring(0, 7)}\n- Environment: ${environmentName}\n- URL: ${environment === 'production' ? 'https://myprod.getthemilkshake.com' : environment === 'staging' ? 'https://mystaging.getthemilkshake.com' : 'https://mydev.getthemilkshake.com'}\n\n🎉 All quality gates passed and deployment completed successfully!\n\nBest regards,\nCI/CD Pipeline`;
+            
+            console.log('Email Subject:', emailSubject);
+            console.log('Email Body:', emailBody);
+            console.log('Recipient:', prAuthorEmail);
+          }

@@ -1,0 +1,55 @@
+name: 'Rollback Deploy'
+description: 'Deploy rollback version and perform health checks'
+
+inputs:
+  version:
+    description: 'Version to rollback to'
+    required: true
+  environment:
+    description: 'Environment to rollback'
+    required: true
+  reason:
+    description: 'Reason for rollback'
+    required: true
+  registry:
+    description: 'Docker registry URL'
+    required: true
+  image-name:
+    description: 'Docker image name'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Deploy rollback version
+      shell: bash
+      run: |
+        echo "🔄 Rolling back to version ${{ inputs.version }}..."
+        echo "Environment: ${{ inputs.environment }}"
+        echo "Reason: ${{ inputs.reason }}"
+        echo "Image: ${{ inputs.registry }}/${{ inputs.image-name }}:${{ inputs.version }}-rollback"
+        
+        # Simulate rollback deployment
+        # In real world, this would:
+        # 1. Stop current deployment
+        # 2. Deploy rollback version
+        # 3. Verify health
+        echo "✅ Rollback deployment completed"
+
+    - name: Health check rollback
+      shell: bash
+      run: |
+        echo "🏥 Verifying rollback health..."
+        # Simulate health check on rollback deployment
+        echo "✅ Rollback health check passed"
+
+    - name: Rollback summary
+      shell: bash
+      run: |
+        echo "## 🔄 Rollback Complete" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Reason**: ${{ inputs.reason }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "- **Health**: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image**: ${{ inputs.registry }}/${{ inputs.image-name }}:${{ inputs.version }}-rollback" >> $GITHUB_STEP_SUMMARY

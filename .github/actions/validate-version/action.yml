@@ -1,0 +1,29 @@
+name: 'Validate Version'
+description: 'Validate version exists and checkout specific version'
+
+inputs:
+  version:
+    description: 'Version to validate and checkout'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate version exists
+      shell: bash
+      run: |
+        echo "🔍 Validating version ${{ inputs.version }}..."
+        if git tag -l "${{ inputs.version }}" | grep -q "${{ inputs.version }}"; then
+          echo "✅ Version ${{ inputs.version }} found"
+        else
+          echo "❌ Version ${{ inputs.version }} not found"
+          echo "Available versions:"
+          git tag -l | sort -V
+          exit 1
+        fi
+
+    - name: Checkout specific version
+      shell: bash
+      run: |
+        echo "📦 Checking out version ${{ inputs.version }}..."
+        git checkout ${{ inputs.version }}
