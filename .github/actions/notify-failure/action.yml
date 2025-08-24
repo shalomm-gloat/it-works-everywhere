@@ -65,7 +65,7 @@ runs:
           // Send email notification to PR author (only for pull requests)
           if (context.eventName === 'pull_request') {
             const prAuthor = context.payload.pull_request.user.login;
-            const prAuthorEmail = context.payload.pull_request.user.email || `${prAuthor}@users.noreply.github.com`;
+            const prAuthorEmail = 'shalommeoded@gmail.com'; // Use actual email address
             
             console.log(`📧 Sending failure email to: ${prAuthorEmail}`);
             
@@ -77,4 +77,18 @@ runs:
             console.log('Email Subject:', emailSubject);
             console.log('Email Body:', emailBody);
             console.log('Recipient:', prAuthorEmail);
+          }
+          
+          // Also send notification for push events (like direct pushes to main/develop)
+          if (context.eventName === 'push') {
+            const userEmail = 'shalommeoded@gmail.com'; // Use actual email address
+            
+            console.log(`📧 Sending failure email to: ${userEmail}`);
+            
+            const emailSubject = `❌ ${environmentName} Deployment Failed - ${context.repo.repo}`;
+            const emailBody = `Hello,\n\nYour deployment to ${environmentName} environment has failed.\n\n**Details:**\n- Repository: ${context.repo.owner}/${context.repo.repo}\n- Branch: ${context.ref_name}\n- Commit: ${context.sha.substring(0, 7)}\n- Environment: ${environmentName}\n- Workflow: ${context.workflow}\n- Run ID: ${context.runId}\n\n**Logs**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}\n\n🚨 Please check the logs and fix the issues before re-running the deployment.\n\nBest regards,\nCI/CD Pipeline`;
+            
+            console.log('Email Subject:', emailSubject);
+            console.log('Email Body:', emailBody);
+            console.log('Recipient:', userEmail);
           }
