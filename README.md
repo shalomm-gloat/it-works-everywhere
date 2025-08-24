@@ -12,6 +12,12 @@ A Node.js Express microservice demonstrating **production-ready CI/CD practices*
 - **✅ Automated Testing**: Unit tests, linting, and health checks
 - **✅ Security Scanning**: Vulnerability scanning and dependency auditing
 
+### 📋 Important Assumptions
+
+- **🚫 Server.js Constraints**: The `server.js` file cannot be modified as per assignment requirements
+- **🧪 Testing Limitations**: The only functional application test available is via the provided `test.sh` script
+- **🔧 Workaround Approach**: Unit tests use `curl` and `child_process` to test the running application
+
 ## 🚀 Phase 2: Full CI/CD Pipeline Implementation
 
 ### ✅ Must-Have Elements
@@ -131,9 +137,16 @@ All container images are automatically built and pushed to:
 
 ### Quality Gates
 - **Linting**: ESLint code quality checks
-- **Testing**: Jest unit tests with coverage
+- **Testing**: Jest unit tests with coverage (using `test.sh` for functional testing)
 - **Security**: npm audit for vulnerability scanning
-- **Health Check**: Application health validation
+- **Health Check**: Application health validation via `test.sh` script
+
+### 🧪 Testing Strategy
+Due to assignment constraints:
+- **Server.js**: Cannot be modified (kept as original)
+- **Functional Testing**: Uses provided `test.sh` script via `curl`
+- **Unit Tests**: Work around limitations using `child_process` and `curl`
+- **Health Checks**: Leverage existing `/health` endpoint
 
 ### Deployment Process
 1. **Feature Branches** → Development environment (deployed)
