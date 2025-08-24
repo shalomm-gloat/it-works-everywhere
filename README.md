@@ -33,6 +33,18 @@ A Node.js Express microservice demonstrating **production-ready CI/CD practices*
 
 ## 🚀 Quick Start
 
+### Manual Setup Required
+
+Before using the CI/CD pipeline, you must configure branch protection rules manually:
+
+1. **Go to GitHub repository → Settings → Branches**
+2. **Add branch protection rules for each protected branch:**
+   - **`main`**: Require PR, 1 approval, no direct pushes
+   - **`staging`**: Require PR, 1 approval, no direct pushes  
+   - **`develop`**: Require PR, 1 approval, no direct pushes
+
+> **Note**: GitHub Actions cannot automatically configure branch protection as it requires organization-level permissions.
+
 ### Local Development
 ```bash
 # Clone the repository
@@ -75,6 +87,9 @@ git checkout staging
 git merge develop  # via PR
 git push origin staging
 # → Create PR to main → Triggers CI/CD pipeline → Production deployment
+```
+
+> **Manual Setup Required**: Configure branch protection rules in GitHub Settings → Branches to enforce PR requirements and approvals.
 
 # 4. Create a release
 git tag v1.0.0
@@ -84,10 +99,12 @@ git push origin v1.0.0
 ## 📋 CI/CD Pipeline
 
 ### Branch Protection
-- **`main`**: Requires 2 approvals, no direct pushes, linear history
+- **`main`**: Requires 1 approval, no direct pushes, linear history
 - **`staging`**: Requires 1 approval, no direct pushes
 - **`develop`**: Requires 1 approval, no direct pushes
 - **Feature branches**: Free to push, require PR to merge
+
+> **Note**: Branch protection rules must be configured manually in GitHub Settings → Branches. GitHub Actions cannot automatically configure branch protection as it requires organization-level permissions.
 
 ### Workflows
 - **CI/CD Pipeline** (`.github/workflows/ci.yml`) → All protected branches
