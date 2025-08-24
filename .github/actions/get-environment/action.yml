@@ -23,8 +23,10 @@ runs:
           ENV="${{ inputs.workflow-dispatch-env }}"
         elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
           ENV="production"
-        elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+        elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
           ENV="staging"
+        elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+          ENV="development"
         else
           ENV="development"
         fi

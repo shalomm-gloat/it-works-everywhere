@@ -18,7 +18,7 @@ A Node.js Express microservice demonstrating **production-ready CI/CD practices*
 
 - **✅ Automated Testing**: Jest unit tests with coverage thresholds
 - **✅ Code Quality Gates**: ESLint with strict rules and automated checks
-- **✅ Branching Strategy**: Simple main/develop workflow
+- **✅ Branching Strategy**: Protected branches with PR requirements (main/staging/develop)
 - **✅ Versioning Strategy**: Semantic versioning with automated release management
 - **✅ Deployment Automation**: Zero-click deployments with Docker Hub integration
 
@@ -60,21 +60,21 @@ make health-check
 #### Development → Staging → Production
 ```bash
 # 1. Development environment
-git checkout feature/new-feature
+git checkout -b feature/new-feature
 git push origin feature/new-feature
-# → Triggers CI/CD pipeline → Development deployment
+# → Create PR to develop → Triggers CI/CD pipeline → Development deployment
 
 # 2. Staging deployment
 git checkout develop
-git merge feature/new-feature
+git merge feature/new-feature  # via PR
 git push origin develop
-# → Triggers CI/CD pipeline → Staging deployment
+# → Create PR to staging → Triggers CI/CD pipeline → Staging deployment
 
 # 3. Production deployment
-git checkout main
-git merge develop
-git push origin main
-# → Triggers CI/CD pipeline → Production deployment
+git checkout staging
+git merge develop  # via PR
+git push origin staging
+# → Create PR to main → Triggers CI/CD pipeline → Production deployment
 
 # 4. Create a release
 git tag v1.0.0
@@ -83,8 +83,14 @@ git push origin v1.0.0
 
 ## 📋 CI/CD Pipeline
 
+### Branch Protection
+- **`main`**: Requires 2 approvals, no direct pushes, linear history
+- **`staging`**: Requires 1 approval, no direct pushes
+- **`develop`**: Requires 1 approval, no direct pushes
+- **Feature branches**: Free to push, require PR to merge
+
 ### Workflows
-- **CI/CD Pipeline** (`.github/workflows/ci.yml`) → Develop and main branches
+- **CI/CD Pipeline** (`.github/workflows/ci.yml`) → All protected branches
 - **Release** (`.github/workflows/release.yml`) → Git tags
 - **Rollback** (`.github/workflows/rollback.yml`) → Manual rollback
 
