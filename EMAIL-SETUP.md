@@ -34,7 +34,8 @@ Add the Brevo SMTP credentials to your GitHub repository:
 
 The email notifications are configured to:
 - **Service**: Brevo SMTP
-- **Dynamic Recipients**: `${{ github.actor }}@users.noreply.github.com`
+- **Dynamic Recipients**: Automatically detects the actual email address of the GitHub user who triggered the deployment
+- **Fallback**: If no public email is found, uses `${{ github.actor }}@users.noreply.github.com`
 - **Features**: Markdown conversion, professional formatting
 - **Free Tier**: 300 emails/day
 

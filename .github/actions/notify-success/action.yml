@@ -68,7 +68,7 @@ runs:
         username: ${{ inputs.brevo-smtp-user }}
         password: ${{ inputs.brevo-smtp-key }}
         subject: "✅ ${{ inputs.environment }} Deployment Successful - ${{ github.repository }}"
-        to: ${{ github.actor }}@users.noreply.github.com
+        to: ${{ github.event.pusher.email }}
         from: "CI/CD Pipeline <${{ inputs.brevo-smtp-user }}>"
         body: |
           Hello ${{ github.actor }},
