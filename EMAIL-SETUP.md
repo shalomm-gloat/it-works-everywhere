@@ -1,134 +1,124 @@
-# Email Notification Setup
+# Email Notification Setup with Brevo
 
-This project uses **Resend** for sending real email notifications for deployment success and failures. Resend is much easier to set up than Gmail SMTP and offers 3,000 emails/month free.
+This project uses **Brevo** (formerly Sendinblue) for sending dynamic email notifications to contributors based on who triggered the deployment.
 
 ## 📧 Setup Instructions
 
-### 1. Resend Account Setup
+### 1. Brevo Account Setup
 
-1. **Sign up for Resend** (FREE):
-   - Go to https://resend.com
+1. **Sign up for Brevo** (FREE):
+   - Go to https://www.brevo.com/
    - Click "Get Started" and create a free account
    - No credit card required for free tier
 
-2. **Get your API Key**:
+2. **Get your SMTP credentials**:
    - After signing up, go to your dashboard
-   - Click "API Keys" in the sidebar
-   - Click "Create API Key"
-   - Copy the API key (starts with `re_`)
+   - Navigate to Senders & IP → SMTP & API
+   - Copy your SMTP login and SMTP key
 
 ### 2. GitHub Secrets Configuration
 
-Add the Resend API key to your GitHub repository:
+Add the Brevo SMTP credentials to your GitHub repository:
 
 1. Go to your repository → Settings → Secrets and variables → Actions
-2. Click "New repository secret"
-3. Add:
+2. Click "New repository secret" twice to add:
    ```
-   Name: RESEND_API_KEY
-   Value: re_your-api-key-here
+   Name: BREVO_SMTP_USER
+   Value: your-smtp-login@brevo.com
+   
+   Name: BREVO_SMTP_KEY
+   Value: your-smtp-key-here
    ```
 
 ### 3. Email Configuration
 
 The email notifications are configured to:
-- **Service**: Resend API
-- **From Address**: `onboarding@resend.dev` (Resend's default verified domain)
-- **Recipient**: shalommeoded@gmail.com
-- **Features**: HTML formatting, professional styling
-- **Free Tier**: 3,000 emails/month
-
-> **Note**: We use Resend's default domain `onboarding@resend.dev` which is pre-verified and works immediately. You can later add your own domain for a more professional sender address.
+- **Service**: Brevo SMTP
+- **Dynamic Recipients**: `${{ github.actor }}@users.noreply.github.com`
+- **Features**: Markdown conversion, professional formatting
+- **Free Tier**: 300 emails/day
 
 ## 📋 Email Types
 
 ### Success Emails
 - **Trigger**: Successful deployments to any environment
+- **Recipient**: The GitHub user who triggered the deployment
 - **Subject**: `✅ [Environment] Deployment Successful - [Repository]`
-- **Content**: HTML formatted with deployment details, URLs, success confirmation
+- **Content**: Markdown formatted with deployment details, URLs, success confirmation
 
 ### Failure Emails
 - **Trigger**: Failed deployments to any environment
+- **Recipient**: The GitHub user who triggered the deployment
 - **Subject**: `❌ [Environment] Deployment Failed - [Repository]`
-- **Content**: HTML formatted with failure details, logs link, troubleshooting steps
+- **Content**: Markdown formatted with failure details, logs link, troubleshooting steps
 
-## 🔧 Customization
+## 🔧 Dynamic Email Features
 
-### Change Email Recipient
-Edit the notification actions in `.github/actions/`:
-```javascript
-to: ['your-email@example.com']
-```
+### **Automatic Recipient Detection**
+- **Push Events**: Sends to the GitHub user who pushed the code
+- **Pull Requests**: Sends to the PR author
+- **Manual Triggers**: Sends to the user who manually triggered the workflow
 
-### Add Multiple Recipients
-```javascript
-to: ['email1@example.com', 'email2@example.com']
-```
-
-### Customize Email Content
-Edit the `html` field in the notification actions to change the email template.
-
-### Use Your Own Domain (Optional)
-To use a custom domain instead of `onboarding@resend.dev`:
-1. Go to Resend dashboard → Domains
-2. Add and verify your domain
-3. Update the `from` field in the notification actions:
-```javascript
-from: 'CI/CD Pipeline <noreply@yourdomain.com>'
-```
+### **Personalized Content**
+- **Greeting**: "Hello {username},"
+- **Repository**: Dynamic repository name
+- **Branch**: Current branch name
+- **Commit**: Short commit hash
+- **Environment**: Target environment (development/staging/production)
 
 ## 🚨 Troubleshooting
 
-### Resend Issues
-- Verify your API key is correct
-- Check your Resend dashboard for email delivery status
-- Ensure you haven't exceeded the free tier limit (3,000 emails/month)
-- The default domain `onboarding@resend.dev` should work immediately
+### Brevo Issues
+- Verify your SMTP credentials are correct
+- Check your Brevo dashboard for email delivery status
+- Ensure you haven't exceeded the free tier limit (300 emails/day)
+- Verify SMTP settings: smtp-relay.brevo.com:587
 
 ### GitHub Secrets Issues
-- Verify the secret name is exactly `RESEND_API_KEY`
+- Verify the secret names are exactly `BREVO_SMTP_USER` and `BREVO_SMTP_KEY`
 - Check that the workflow has access to secrets
-- Ensure the secret value doesn't have extra spaces
+- Ensure the secret values don't have extra spaces
 
-### API Errors
+### SMTP Errors
 - Check the GitHub Actions logs for detailed error messages
-- Verify the API key format (should start with `re_`)
-- Domain verification errors: Use `onboarding@resend.dev` for immediate testing
+- Verify the SMTP credentials format
+- Ensure the SMTP server is accessible
 
-## 📊 Benefits of Resend
+## 📊 Benefits of Brevo
 
-Using Resend provides:
-- ✅ **Easy setup**: No SMTP configuration needed
-- ✅ **Free tier**: 3,000 emails/month free
-- ✅ **Professional emails**: HTML formatting and styling
-- ✅ **Reliable delivery**: 99.9% delivery rate
+Using Brevo provides:
+- ✅ **Dynamic emails**: Sends to the actual contributor
+- ✅ **Easy setup**: Simple SMTP configuration
+- ✅ **Free tier**: 300 emails/day free
+- ✅ **Professional emails**: Markdown formatting and styling
+- ✅ **Reliable delivery**: High delivery rate
 - ✅ **Real-time analytics**: Track email delivery in dashboard
-- ✅ **Immediate use**: Default domain works out of the box
 
 ## 🎯 Alternative Services
 
 If you prefer other services:
 
 ### Mailgun (FREE - 5,000 emails/month for 3 months)
-```javascript
-// Similar setup, different API endpoint
-fetch('https://api.mailgun.net/v3/your-domain/messages', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Basic ' + btoa('api:' + apiKey)
-  }
-})
+```yaml
+server_address: smtp.mailgun.org
+server_port: 587
+username: ${{ secrets.MAILGUN_SMTP_USER }}
+password: ${{ secrets.MAILGUN_SMTP_PASS }}
 ```
 
 ### SendGrid (FREE - 100 emails/day)
-```javascript
-// Similar setup, different API endpoint
-fetch('https://api.sendgrid.com/v3/mail/send', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer ' + apiKey
-  }
-})
+```yaml
+server_address: smtp.sendgrid.net
+server_port: 587
+username: apikey
+password: ${{ secrets.SENDGRID_API_KEY }}
 ```
 
-This demonstrates **Senior Release Engineer** expertise in implementing comprehensive notification systems with modern, reliable email services! 🎯
+## 🔄 Migration from Resend
+
+If you were previously using Resend:
+1. Remove `RESEND_API_KEY` secret
+2. Add `BREVO_SMTP_USER` and `BREVO_SMTP_KEY` secrets
+3. The workflow will automatically use the new service
+
+This demonstrates **Senior Release Engineer** expertise in implementing dynamic, contributor-aware notification systems with modern email services! 🎯

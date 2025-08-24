@@ -38,7 +38,8 @@ jobs:
       uses: ./.github/actions/notify-failure
       with:
         environment: development
-        resend-api-key: ${{ secrets.RESEND_API_KEY }}
+        brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
+        brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
 
   build:
     name: Build & Deploy
@@ -77,11 +78,13 @@ jobs:
         environment: ${{ steps.env.outputs.environment }}
         registry: ${{ env.REGISTRY }}
         image-name: ${{ env.IMAGE_NAME }}
-        resend-api-key: ${{ secrets.RESEND_API_KEY }}
+        brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
+        brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
 
     - name: Notify failure
       if: failure()
       uses: ./.github/actions/notify-failure
       with:
         environment: ${{ steps.env.outputs.environment }}
-        resend-api-key: ${{ secrets.RESEND_API_KEY }}
+        brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
+        brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}

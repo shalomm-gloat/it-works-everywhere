@@ -11,8 +11,11 @@ inputs:
   image-name:
     description: 'Docker image name'
     required: true
-  resend-api-key:
-    description: 'Resend API key for email sending'
+  brevo-smtp-user:
+    description: 'Brevo SMTP username'
+    required: true
+  brevo-smtp-key:
+    description: 'Brevo SMTP password'
     required: true
 
 runs:
@@ -57,51 +60,30 @@ runs:
           }
 
     - name: Send success email notification
-      uses: actions/github-script@v6
+      uses: dawidd6/action-send-mail@v6
       with:
-        script: |
-          const environment = '${{ inputs.environment }}';
-          const environmentName = environment.charAt(0).toUpperCase() + environment.slice(1);
+        server_address: smtp-relay.brevo.com
+        server_port: 587
+        secure: false
+        username: ${{ inputs.brevo-smtp-user }}
+        password: ${{ inputs.brevo-smtp-key }}
+        subject: "✅ ${{ inputs.environment }} Deployment Successful - ${{ github.repository }}"
+        to: ${{ github.actor }}@users.noreply.github.com
+        from: "CI/CD Pipeline <${{ inputs.brevo-smtp-user }}>"
+        body: |
+          Hello ${{ github.actor }},
           
-          const emailData = {
-            from: 'CI/CD Pipeline <onboarding@resend.dev>',
-            to: ['shalommeoded@gmail.com'],
-            subject: `✅ ${environmentName} Deployment Successful - ${context.repo.repo}`,
-            html: `
-              <h2>🎉 Deployment Successful!</h2>
-              <p>Your deployment to <strong>${environmentName}</strong> environment has completed successfully!</p>
-              
-              <h3>Details:</h3>
-              <ul>
-                <li><strong>Repository:</strong> ${context.repo.owner}/${context.repo.repo}</li>
-                <li><strong>Branch:</strong> ${context.ref_name}</li>
-                <li><strong>Commit:</strong> ${context.sha.substring(0, 7)}</li>
-                <li><strong>Environment:</strong> ${environmentName}</li>
-                <li><strong>URL:</strong> ${environment === 'production' ? 'https://myprod.getthemilkshake.com' : environment === 'staging' ? 'https://mystaging.getthemilkshake.com' : 'https://mydev.getthemilkshake.com'}</li>
-              </ul>
-              
-              <p>🎉 All quality gates passed and deployment completed successfully!</p>
-              
-              <p>Best regards,<br>CI/CD Pipeline</p>
-            `
-          };
+          Your deployment to ${{ inputs.environment }} environment has completed successfully!
           
-          try {
-            const response = await fetch('https://api.resend.com/emails', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${{ inputs.resend-api-key }}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(emailData)
-            });
-            
-            if (response.ok) {
-              console.log('✅ Success email sent via Resend');
-            } else {
-              console.log('⚠️ Failed to send email via Resend');
-              console.log('Response:', await response.text());
-            }
-          } catch (error) {
-            console.log('⚠️ Error sending email via Resend:', error.message);
-          }
+          **Details:**
+          - Repository: ${{ github.repository }}
+          - Branch: ${{ github.ref_name }}
+          - Commit: ${{ github.sha }}
+          - Environment: ${{ inputs.environment }}
+          - URL: ${{ inputs.environment == 'production' && 'https://myprod.getthemilkshake.com' || inputs.environment == 'staging' && 'https://mystaging.getthemilkshake.com' || 'https://mydev.getthemilkshake.com' }}
+          
+          🎉 All quality gates passed and deployment completed successfully!
+          
+          Best regards,
+          CI/CD Pipeline
+        convert_markdown: true
