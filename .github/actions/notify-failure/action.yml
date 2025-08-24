@@ -78,7 +78,7 @@ runs:
         password: ${{ inputs.brevo-smtp-key }}
         subject: "❌ ${{ inputs.environment }} Deployment Failed - ${{ github.repository }}"
         to: ${{ github.event.pusher.email }}
-        from: "CI/CD Pipeline <${{ inputs.brevo-smtp-user }}>"
+        from: "CI/CD Pipeline <noreply@your-domain.com>"
         body: |
           Hello ${{ github.actor }},
           

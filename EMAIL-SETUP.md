@@ -11,8 +11,13 @@ This project uses **Brevo** (formerly Sendinblue) for sending dynamic email noti
    - Click "Get Started" and create a free account
    - No credit card required for free tier
 
-2. **Get your SMTP credentials**:
-   - After signing up, go to your dashboard
+2. **Verify your sender domain** (REQUIRED):
+   - Go to Senders & IP → Senders
+   - Add and verify your domain (e.g., yourdomain.com)
+   - Or use Brevo's default domain for testing
+   - **Important**: You must verify your sender domain before sending emails
+
+3. **Get your SMTP credentials**:
    - Navigate to Senders & IP → SMTP & API
    - Copy your SMTP login and SMTP key
 
@@ -30,7 +35,19 @@ Add the Brevo SMTP credentials to your GitHub repository:
    Value: your-smtp-key-here
    ```
 
-### 3. Email Configuration
+### 3. Update Sender Email
+
+**IMPORTANT**: You need to update the sender email in the workflow files:
+
+1. Replace `noreply@your-domain.com` in these files with your verified domain:
+   - `.github/actions/notify-success/action.yml`
+   - `.github/actions/notify-failure/action.yml`
+
+2. **For testing without a domain**, you can use:
+   - `noreply@brevo.com` (if Brevo allows it)
+   - Or verify a simple domain like `yourdomain.com`
+
+### 4. Email Configuration
 
 The email notifications are configured to:
 - **Service**: Brevo SMTP
