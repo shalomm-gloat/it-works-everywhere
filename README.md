@@ -22,6 +22,11 @@ A Node.js Express microservice demonstrating **production-ready CI/CD practices*
 - **✅ Versioning Strategy**: Semantic versioning with automated release management
 - **✅ Deployment Automation**: Zero-click deployments with Docker Hub integration
 
+### 🐳 Container Registry
+- **Docker Hub**: [shalommeoded92/it-works-on-my-machine](https://hub.docker.com/repository/docker/shalommeoded92/it-works-on-my-machine/general)
+- **Images**: Automatically built and pushed on every deployment
+- **Tags**: Branch-based tagging (main, staging, develop, feature branches)
+
 ### ✅ Bonus Points Implemented
 
 - **✅ Environment Progression**: Three-environment pipeline (dev → staging → production)
@@ -43,7 +48,7 @@ Before using the CI/CD pipeline, you must configure branch protection rules manu
    - **`staging`**: Require PR, 1 approval, no direct pushes  
    - **`develop`**: Require PR, 1 approval, no direct pushes
 
-> **Note**: GitHub Actions cannot automatically configure branch protection as it requires organization-level permissions.
+> **Note**: GitHub Actions cannot automatically configure branch protection as it requires organization-level settings and I use the free version :)
 
 ### Local Development
 ```bash
@@ -117,6 +122,12 @@ The pipeline uses modular, reusable actions located in `.github/actions/`:
 - **Notification Actions**: Success/failure notifications with email alerts
 - **Utility Actions**: Environment detection, release generation
 - **Rollback Actions**: Version validation, rollback deployment
+
+### 🐳 Container Images
+All container images are automatically built and pushed to:
+- **Registry**: [Docker Hub - shalommeoded92/it-works-on-my-machine](https://hub.docker.com/repository/docker/shalommeoded92/it-works-on-my-machine/general)
+- **Build Process**: Multi-stage Docker builds with security scanning
+- **Deployment**: Images pulled from registry for each environment
 
 ### Quality Gates
 - **Linting**: ESLint code quality checks
