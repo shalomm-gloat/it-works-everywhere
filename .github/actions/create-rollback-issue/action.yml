@@ -25,27 +25,34 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
-          github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: `🔄 Rollback to ${{ inputs.version }}`,
-            body: `## Rollback Summary
-            
-            **Version**: ${{ inputs.version }}
-            **Environment**: ${{ inputs.environment }}
-            **Reason**: ${{ inputs.reason }}
-            **Triggered by**: ${context.actor}
-            **Timestamp**: ${new Date().toISOString()}
-            
-            **Rollback Image**: ${{ inputs.registry }}/${{ inputs.image-name }}:${{ inputs.version }}-rollback
-            
-            ## Next Steps
-            - [ ] Investigate root cause of issues
-            - [ ] Fix issues in development
-            - [ ] Test fixes thoroughly
-            - [ ] Plan next deployment`,
-            labels: ['rollback', 'urgent', 'deployment']
-          });
+          try {
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔄 Rollback to ${{ inputs.version }}`,
+              body: `## Rollback Summary
+              
+              **Version**: ${{ inputs.version }}
+              **Environment**: ${{ inputs.environment }}
+              **Reason**: ${{ inputs.reason }}
+              **Triggered by**: ${context.actor}
+              **Timestamp**: ${new Date().toISOString()}
+              
+              **Rollback Image**: ${{ inputs.registry }}/${{ inputs.image-name }}:${{ inputs.version }}-rollback
+              
+              ## Next Steps
+              - [ ] Investigate root cause of issues
+              - [ ] Fix issues in development
+              - [ ] Test fixes thoroughly
+              - [ ] Plan next deployment`,
+              labels: ['rollback', 'urgent', 'deployment']
+            });
+            console.log('✅ Rollback issue created successfully');
+          } catch (error) {
+            console.log('⚠️ Could not create rollback issue (this is normal for some permissions)');
+            console.log('Error details:', error.message);
+            console.log('Rollback details logged above for reference');
+          }
 
     - name: Notify rollback
       shell: bash

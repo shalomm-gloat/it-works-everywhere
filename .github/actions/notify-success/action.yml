@@ -37,17 +37,23 @@ runs:
           console.log('📢 DEPLOYMENT NOTIFICATION:');
           console.log(message);
           
-          // Create GitHub comment for tracking
-          if (context.eventName === 'push') {
-            github.rest.repos.createCommitComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              commit_sha: context.sha,
-              body: message
-            });
+          // Create GitHub comment for tracking (only for pull requests)
+          if (context.eventName === 'pull_request') {
+            try {
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: message
+              });
+              console.log('✅ Success comment created on PR');
+            } catch (error) {
+              console.log('⚠️ Could not create PR comment (this is normal for some permissions)');
+              console.log('Error details:', error.message);
+            }
           }
           
-          // Send email notification to PR author
+          // Send email notification to PR author (only for pull requests)
           if (context.eventName === 'pull_request') {
             const prAuthor = context.payload.pull_request.user.login;
             const prAuthorEmail = context.payload.pull_request.user.email || `${prAuthor}@users.noreply.github.com`;

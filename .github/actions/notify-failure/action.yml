@@ -33,30 +33,36 @@ runs:
           console.log(message);
           
           // Create GitHub issue for failure tracking
-          github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: `🚨 ${environmentName} Deployment Failed - ${context.sha.substring(0, 7)}`,
-            body: `## ${environmentName} Deployment Failure
+          try {
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 ${environmentName} Deployment Failed - ${context.sha.substring(0, 7)}`,
+              body: `## ${environmentName} Deployment Failure
             
-            **Repository**: ${context.repo.owner}/${context.repo.repo}
-            **Branch**: ${context.ref_name}
-            **Commit**: ${context.sha}
-            **Triggered by**: ${context.actor}
-            **Workflow**: ${context.workflow}
-            **Run ID**: ${context.runId}
-            
-            **Logs**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
-            
-            ## Next Steps
-            - [ ] Investigate failure cause
-            - [ ] Fix issues in development
-            - [ ] Re-run deployment
-            - [ ] Consider rollback if needed`,
-            labels: ['deployment-failure', 'urgent', 'ci-cd']
-          });
+              **Repository**: ${context.repo.owner}/${context.repo.repo}
+              **Branch**: ${context.ref_name}
+              **Commit**: ${context.sha}
+              **Triggered by**: ${context.actor}
+              **Workflow**: ${context.workflow}
+              **Run ID**: ${context.runId}
+              
+              **Logs**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+              
+              ## Next Steps
+              - [ ] Investigate failure cause
+              - [ ] Fix issues in development
+              - [ ] Re-run deployment
+              - [ ] Consider rollback if needed`,
+              labels: ['deployment-failure', 'urgent', 'ci-cd']
+            });
+            console.log('✅ Failure issue created');
+          } catch (error) {
+            console.log('⚠️ Could not create failure issue (this is normal for some permissions)');
+            console.log('Error details:', error.message);
+          }
           
-          // Send email notification to PR author
+          // Send email notification to PR author (only for pull requests)
           if (context.eventName === 'pull_request') {
             const prAuthor = context.payload.pull_request.user.login;
             const prAuthorEmail = context.payload.pull_request.user.email || `${prAuthor}@users.noreply.github.com`;
