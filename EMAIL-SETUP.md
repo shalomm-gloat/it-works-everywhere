@@ -33,9 +33,12 @@ Add the Resend API key to your GitHub repository:
 
 The email notifications are configured to:
 - **Service**: Resend API
+- **From Address**: `onboarding@resend.dev` (Resend's default verified domain)
 - **Recipient**: shalommeoded@gmail.com
 - **Features**: HTML formatting, professional styling
 - **Free Tier**: 3,000 emails/month
+
+> **Note**: We use Resend's default domain `onboarding@resend.dev` which is pre-verified and works immediately. You can later add your own domain for a more professional sender address.
 
 ## 📋 Email Types
 
@@ -65,12 +68,22 @@ to: ['email1@example.com', 'email2@example.com']
 ### Customize Email Content
 Edit the `html` field in the notification actions to change the email template.
 
+### Use Your Own Domain (Optional)
+To use a custom domain instead of `onboarding@resend.dev`:
+1. Go to Resend dashboard → Domains
+2. Add and verify your domain
+3. Update the `from` field in the notification actions:
+```javascript
+from: 'CI/CD Pipeline <noreply@yourdomain.com>'
+```
+
 ## 🚨 Troubleshooting
 
 ### Resend Issues
 - Verify your API key is correct
 - Check your Resend dashboard for email delivery status
 - Ensure you haven't exceeded the free tier limit (3,000 emails/month)
+- The default domain `onboarding@resend.dev` should work immediately
 
 ### GitHub Secrets Issues
 - Verify the secret name is exactly `RESEND_API_KEY`
@@ -80,6 +93,7 @@ Edit the `html` field in the notification actions to change the email template.
 ### API Errors
 - Check the GitHub Actions logs for detailed error messages
 - Verify the API key format (should start with `re_`)
+- Domain verification errors: Use `onboarding@resend.dev` for immediate testing
 
 ## 📊 Benefits of Resend
 
@@ -89,6 +103,7 @@ Using Resend provides:
 - ✅ **Professional emails**: HTML formatting and styling
 - ✅ **Reliable delivery**: 99.9% delivery rate
 - ✅ **Real-time analytics**: Track email delivery in dashboard
+- ✅ **Immediate use**: Default domain works out of the box
 
 ## 🎯 Alternative Services
 

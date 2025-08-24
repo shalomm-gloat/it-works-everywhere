@@ -73,7 +73,7 @@ runs:
           const environmentName = environment.charAt(0).toUpperCase() + environment.slice(1);
           
           const emailData = {
-            from: 'CI/CD Pipeline <noreply@your-domain.com>',
+            from: 'CI/CD Pipeline <onboarding@resend.dev>',
             to: ['shalommeoded@gmail.com'],
             subject: `❌ ${environmentName} Deployment Failed - ${context.repo.repo}`,
             html: `
