@@ -71,7 +71,7 @@ runs:
     - name: Send failure email notification
       uses: dawidd6/action-send-mail@v6
       with:
-        server_address: smtp-relay.brevo.com
+        server_address: smtp.gmail.com
         server_port: 587
         secure: false
         username: ${{ inputs.brevo-smtp-user }}
