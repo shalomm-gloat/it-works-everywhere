@@ -38,6 +38,7 @@ jobs:
       uses: ./.github/actions/notify-failure
       with:
         environment: development
+        resend-api-key: ${{ secrets.RESEND_API_KEY }}
 
   build:
     name: Build & Deploy
@@ -76,9 +77,11 @@ jobs:
         environment: ${{ steps.env.outputs.environment }}
         registry: ${{ env.REGISTRY }}
         image-name: ${{ env.IMAGE_NAME }}
+        resend-api-key: ${{ secrets.RESEND_API_KEY }}
 
     - name: Notify failure
       if: failure()
       uses: ./.github/actions/notify-failure
       with:
         environment: ${{ steps.env.outputs.environment }}
+        resend-api-key: ${{ secrets.RESEND_API_KEY }}

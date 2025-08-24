@@ -1,98 +1,119 @@
 # Email Notification Setup
 
-This project uses the [Send email GitHub Action](https://github.com/marketplace/actions/send-email) to send real email notifications for deployment success and failures.
+This project uses **Resend** for sending real email notifications for deployment success and failures. Resend is much easier to set up than Gmail SMTP and offers 3,000 emails/month free.
 
 ## 📧 Setup Instructions
 
-### 1. Gmail App Password Setup
+### 1. Resend Account Setup
 
-Since we're using Gmail SMTP, you need to create an App Password:
+1. **Sign up for Resend** (FREE):
+   - Go to https://resend.com
+   - Click "Get Started" and create a free account
+   - No credit card required for free tier
 
-1. **Enable 2-Step Verification** (required for App passwords)
-   - Go to [Google Account settings](https://myaccount.google.com/)
-   - Navigate to Security → 2-Step Verification
-   - Enable it if not already enabled
-
-2. **Create App Password**
-   - Go to [Google Account settings](https://myaccount.google.com/)
-   - Navigate to Security → App passwords
-   - Select "Mail" as the app
-   - Copy the generated 16-character password
+2. **Get your API Key**:
+   - After signing up, go to your dashboard
+   - Click "API Keys" in the sidebar
+   - Click "Create API Key"
+   - Copy the API key (starts with `re_`)
 
 ### 2. GitHub Secrets Configuration
 
-Add these secrets to your GitHub repository:
+Add the Resend API key to your GitHub repository:
 
 1. Go to your repository → Settings → Secrets and variables → Actions
-2. Add the following secrets:
-
-```
-MAIL_USERNAME: your-email@gmail.com
-MAIL_PASSWORD: your-16-character-app-password
-```
+2. Click "New repository secret"
+3. Add:
+   ```
+   Name: RESEND_API_KEY
+   Value: re_your-api-key-here
+   ```
 
 ### 3. Email Configuration
 
 The email notifications are configured to:
-- **SMTP Server**: smtp.gmail.com
-- **Port**: 587 (TLS)
+- **Service**: Resend API
 - **Recipient**: shalommeoded@gmail.com
-- **Features**: Markdown conversion, HTML formatting
+- **Features**: HTML formatting, professional styling
+- **Free Tier**: 3,000 emails/month
 
 ## 📋 Email Types
 
 ### Success Emails
 - **Trigger**: Successful deployments to any environment
 - **Subject**: `✅ [Environment] Deployment Successful - [Repository]`
-- **Content**: Deployment details, URLs, success confirmation
+- **Content**: HTML formatted with deployment details, URLs, success confirmation
 
 ### Failure Emails
 - **Trigger**: Failed deployments to any environment
 - **Subject**: `❌ [Environment] Deployment Failed - [Repository]`
-- **Content**: Failure details, logs link, troubleshooting steps
+- **Content**: HTML formatted with failure details, logs link, troubleshooting steps
 
 ## 🔧 Customization
 
 ### Change Email Recipient
 Edit the notification actions in `.github/actions/`:
-```yaml
-to: your-email@example.com
-```
-
-### Change SMTP Settings
-For different email providers, update the SMTP settings:
-```yaml
-server_address: smtp.your-provider.com
-server_port: 587  # or 465 for SSL
+```javascript
+to: ['your-email@example.com']
 ```
 
 ### Add Multiple Recipients
-```yaml
-to: email1@example.com,email2@example.com
+```javascript
+to: ['email1@example.com', 'email2@example.com']
 ```
+
+### Customize Email Content
+Edit the `html` field in the notification actions to change the email template.
 
 ## 🚨 Troubleshooting
 
-### Gmail Issues
-- Ensure 2-Step Verification is enabled
-- Use App Password, not your regular password
-- Check that "Less secure app access" is not needed (App passwords are more secure)
+### Resend Issues
+- Verify your API key is correct
+- Check your Resend dashboard for email delivery status
+- Ensure you haven't exceeded the free tier limit (3,000 emails/month)
 
-### SMTP Errors
-- Verify server_address and port
-- Check username/password in GitHub secrets
-- Ensure firewall allows SMTP connections
-
-### Permission Issues
-- Verify GitHub secrets are properly set
+### GitHub Secrets Issues
+- Verify the secret name is exactly `RESEND_API_KEY`
 - Check that the workflow has access to secrets
+- Ensure the secret value doesn't have extra spaces
 
-## 📊 Benefits
+### API Errors
+- Check the GitHub Actions logs for detailed error messages
+- Verify the API key format (should start with `re_`)
 
-Using real email notifications provides:
-- ✅ **Immediate alerts** for deployment status
-- ✅ **Professional communication** with stakeholders
-- ✅ **Audit trail** of deployment history
-- ✅ **Real-world production practices**
+## 📊 Benefits of Resend
 
-This demonstrates **Senior Release Engineer** expertise in implementing comprehensive notification systems! 🎯
+Using Resend provides:
+- ✅ **Easy setup**: No SMTP configuration needed
+- ✅ **Free tier**: 3,000 emails/month free
+- ✅ **Professional emails**: HTML formatting and styling
+- ✅ **Reliable delivery**: 99.9% delivery rate
+- ✅ **Real-time analytics**: Track email delivery in dashboard
+
+## 🎯 Alternative Services
+
+If you prefer other services:
+
+### Mailgun (FREE - 5,000 emails/month for 3 months)
+```javascript
+// Similar setup, different API endpoint
+fetch('https://api.mailgun.net/v3/your-domain/messages', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Basic ' + btoa('api:' + apiKey)
+  }
+})
+```
+
+### SendGrid (FREE - 100 emails/day)
+```javascript
+// Similar setup, different API endpoint
+fetch('https://api.sendgrid.com/v3/mail/send', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + apiKey
+  }
+})
+```
+
+This demonstrates **Senior Release Engineer** expertise in implementing comprehensive notification systems with modern, reliable email services! 🎯
