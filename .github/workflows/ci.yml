@@ -82,6 +82,16 @@ jobs:
       id: version
       uses: ./.github/actions/generate-version
 
+    - name: Debug version outputs
+      run: |
+        echo "Version output: '${{ steps.version.outputs.version }}'"
+        echo "Base version: '${{ steps.version.outputs.base_version }}'"
+        echo "Version suffix: '${{ steps.version.outputs.version_suffix }}'"
+        echo "Environment: '${{ steps.version.outputs.env_suffix }}'"
+        echo "Version type: '${{ steps.version.outputs.version_type }}'"
+        echo "Commit SHA: '${{ steps.version.outputs.commit_sha }}'"
+        echo "Build date: '${{ steps.version.outputs.build_date }}'"
+
     # Keep custom environment detection (business logic)
     - name: Get target environment
       id: env
