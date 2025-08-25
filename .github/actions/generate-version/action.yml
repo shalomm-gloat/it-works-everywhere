@@ -1,6 +1,29 @@
 name: 'Generate Version'
 description: 'Generate semantic version tags based on branch and package.json'
 
+outputs:
+  version:
+    description: 'Full SemVer version string'
+    value: ${{ steps.version.outputs.version }}
+  base_version:
+    description: 'Base version from package.json'
+    value: ${{ steps.version.outputs.base_version }}
+  version_suffix:
+    description: 'Pre-release suffix'
+    value: ${{ steps.version.outputs.version_suffix }}
+  env_suffix:
+    description: 'Environment identifier'
+    value: ${{ steps.version.outputs.env_suffix }}
+  version_type:
+    description: 'Version classification'
+    value: ${{ steps.version.outputs.version_type }}
+  commit_sha:
+    description: 'Short commit SHA'
+    value: ${{ steps.version.outputs.commit_sha }}
+  build_date:
+    description: 'Build timestamp'
+    value: ${{ steps.version.outputs.build_date }}
+
 runs:
   using: 'composite'
   steps:
