@@ -38,6 +38,7 @@ jobs:
       uses: ./.github/actions/notify-failure
       with:
         environment: development
+        version: 'N/A'
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
 

@@ -1,4 +1,6 @@
-# Reusable GitHub Actions
+# Reusable GitHub Actions Short
+
+## **For additional info please check each action's ReadMe file**
 
 This directory contains reusable GitHub Actions that break down the CI/CD pipeline into modular, maintainable components.
 

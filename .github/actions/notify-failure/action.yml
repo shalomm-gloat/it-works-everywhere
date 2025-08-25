@@ -29,7 +29,7 @@ runs:
           const message = `❌ **${environmentName} Deployment Failed**
           
           **Repository**: ${context.repo.owner}/${context.repo.repo}
-          **Branch**: ${context.ref_name}
+          **Branch**: ${context.ref_name || 'N/A'}
           **Version**: ${{ inputs.version || 'N/A' }}
           **Commit**: ${context.sha.substring(0, 7)}
           **Triggered by**: ${context.actor}
@@ -42,16 +42,16 @@ runs:
           console.log('🚨 FAILURE NOTIFICATION:');
           console.log(message);
           
-          // Create GitHub issue for failure tracking
+          // Create GitHub issue for failure tracking (only if permissions allow)
           try {
-            github.rest.issues.create({
+            const issueResponse = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `🚨 ${environmentName} Deployment Failed - ${context.sha.substring(0, 7)}`,
               body: `## ${environmentName} Deployment Failure
             
               **Repository**: ${context.repo.owner}/${context.repo.repo}
-              **Branch**: ${context.ref_name}
+              **Branch**: ${context.ref_name || 'N/A'}
               **Version**: ${{ inputs.version || 'N/A' }}
               **Commit**: ${context.sha}
               **Triggered by**: ${context.actor}
@@ -67,10 +67,11 @@ runs:
               - [ ] Consider rollback if needed`,
               labels: ['deployment-failure', 'urgent', 'ci-cd']
             });
-            console.log('✅ Failure issue created');
+            console.log(`✅ Failure issue created: #${issueResponse.data.number}`);
           } catch (error) {
-            console.log('⚠️ Could not create failure issue (this is normal for some permissions)');
-            console.log('Error details:', error.message);
+            console.log('⚠️ Could not create failure issue - this is normal if the workflow lacks issue creation permissions');
+            console.log('Error:', error.message);
+            console.log('The failure notification was still logged above for visibility');
           }
 
     - name: Send failure email notification
@@ -91,7 +92,7 @@ runs:
           
           **Details:**
           - Repository: ${{ github.repository }}
-          - Branch: ${{ github.ref_name }}
+          - Branch: ${{ github.ref_name || 'N/A' }}
           - Version: ${{ inputs.version || 'N/A' }}
           - Commit: ${{ github.sha }}
           - Environment: ${{ inputs.environment }}

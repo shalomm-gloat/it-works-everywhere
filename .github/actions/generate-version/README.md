@@ -4,22 +4,30 @@ This action generates semantic version tags based on the current branch and the 
 
 ## How it works
 
-The action reads the base version from `package.json` and applies environment-specific suffixes based on the current branch:
+The action implements **Semantic Versioning 2.0.0** compliant versioning based on the current branch:
 
-- **main branch**: No suffix (e.g., `v1.0.0+abc123`)
-- **develop branch**: `-dev` suffix (e.g., `v1.0.0-dev+abc123`)
-- **staging branch**: `-stg` suffix (e.g., `v1.0.0-stg+abc123`)
-- **other branches**: `-dev` suffix (e.g., `v1.0.0-dev+abc123`)
+### **Branch-based Versioning**:
+- **main branch**: Release version (e.g., `v1.0.0+abc123.20240825.145920`)
+- **develop branch**: Development pre-release (e.g., `v1.0.0-dev+abc123.20240825.145920`)
+- **staging branch**: Staging pre-release (e.g., `v1.0.0-stg+abc123.20240825.145920`)
+- **release/* branches**: Release candidates (e.g., `v1.0.0-rc.1+abc123.20240825.145920`)
+- **hotfix/* branches**: Hotfix pre-release (e.g., `v1.0.0-hotfix+abc123.20240825.145920`)
+- **feature branches**: Development pre-release (e.g., `v1.0.0-dev+abc123.20240825.145920`)
 
-The commit SHA is added as build metadata for traceability.
+### **SemVer 2.0.0 Compliance**: https://semver.org/
+- **MAJOR.MINOR.PATCH**: From `package.json`
+- **Pre-release**: Environment-specific suffixes (`-dev`, `-stg`, `-rc.1`, `-hotfix`)
+- **Build metadata**: Commit SHA + build timestamp for traceability
 
 ## Outputs
 
-- `version`: Full version string (e.g., `v1.0.0-dev+abc123`)
+- `version`: Full SemVer version string (e.g., `v1.0.0-dev+abc123.20240825.145920`)
 - `base_version`: Base version from package.json (e.g., `1.0.0`)
-- `version_suffix`: Environment suffix (e.g., `-dev`, `-stg`, or empty)
-- `env_suffix`: Environment identifier (e.g., `dev`, `stg`, or empty)
+- `version_suffix`: Pre-release suffix (e.g., `-dev`, `-stg`, `-rc.1`, `-hotfix`, or empty)
+- `env_suffix`: Environment identifier (e.g., `dev`, `stg`, `rc`, `hotfix`, `prod`)
+- `version_type`: Version classification (e.g., `pre-release`, `release-candidate`, `release`)
 - `commit_sha`: Short commit SHA (e.g., `abc123`)
+- `build_date`: Build timestamp (e.g., `20240825.145920`)
 
 ## Usage
 
@@ -34,6 +42,13 @@ The commit SHA is added as build metadata for traceability.
 
 ## Version Format
 
-Follows [Semantic Versioning 2.0.0](https://semver.org/) with build metadata:
-- `v{MAJOR}.{MINOR}.{PATCH}{PRERELEASE}+{BUILD}`
-- Example: `v1.0.0-dev+abc123`
+Follows [Semantic Versioning 2.0.0](https://semver.org/) with enhanced build metadata:
+- **Release**: `v{MAJOR}.{MINOR}.{PATCH}+{COMMIT}.{TIMESTAMP}`
+- **Pre-release**: `v{MAJOR}.{MINOR}.{PATCH}{PRERELEASE}+{COMMIT}.{TIMESTAMP}`
+
+### Examples:
+- **Production**: `v1.0.0+abc123.20240825.145920`
+- **Development**: `v1.0.0-dev+abc123.20240825.145920`
+- **Staging**: `v1.0.0-stg+abc123.20240825.145920`
+- **Release Candidate**: `v1.0.0-rc.1+abc123.20240825.145920`
+- **Hotfix**: `v1.0.0-hotfix+abc123.20240825.145920`
