@@ -15,6 +15,9 @@ inputs:
   password:
     description: 'Docker registry password'
     required: true
+  version:
+    description: 'Version tag for the Docker image'
+    required: true
 
 runs:
   using: 'composite'
@@ -28,19 +31,15 @@ runs:
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ inputs.registry }}/${{ inputs.image-name }}
-        tags: |
-          type=ref,event=branch
-          type=raw,value=latest,enable={{is_default_branch}}
-
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
+        tags: |
+          ${{ inputs.registry }}/${{ inputs.image-name }}:${{ inputs.version }}
+          ${{ inputs.registry }}/${{ inputs.image-name }}:latest
+        labels: |
+          org.opencontainers.image.version=${{ inputs.version }}
+          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+          org.opencontainers.image.revision=${{ github.sha }}

@@ -11,6 +11,9 @@ inputs:
   image-name:
     description: 'Docker image name'
     required: true
+  version:
+    description: 'Version that was deployed'
+    required: true
   brevo-smtp-user:
     description: 'Brevo SMTP username'
     required: true
@@ -33,9 +36,10 @@ runs:
           
           **Repository**: ${context.repo.owner}/${context.repo.repo}
           **Branch**: ${context.ref_name}
+          **Version**: ${{ inputs.version }}
           **Commit**: ${context.sha.substring(0, 7)}
           **Triggered by**: ${context.actor}
-          **Image**: ${{ inputs.registry }}/${{ inputs.image-name }}:${context.sha.substring(0, 7)}
+          **Image**: ${{ inputs.registry }}/${{ inputs.image-name }}:${{ inputs.version }}
           
           🎉 All checks passed and ${environment} deployment completed successfully!`;
           
@@ -78,6 +82,7 @@ runs:
           **Details:**
           - Repository: ${{ github.repository }}
           - Branch: ${{ github.ref_name }}
+          - Version: ${{ inputs.version }}
           - Commit: ${{ github.sha }}
           - Environment: ${{ inputs.environment }}
           - URL: ${{ 

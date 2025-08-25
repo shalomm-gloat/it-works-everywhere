@@ -39,6 +39,15 @@ jobs:
       with:
         version: ${{ github.event.inputs.version }}
 
+    - name: Generate rollback version tag
+      id: version
+      run: |
+        # Create rollback version with -rollback suffix
+        ROLLBACK_VERSION="${{ github.event.inputs.version }}-rollback"
+        echo "rollback_version=${ROLLBACK_VERSION}" >> $GITHUB_OUTPUT
+        echo "base_version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        echo "Generated rollback version: ${ROLLBACK_VERSION}"
+
     - name: Build rollback image
       uses: ./.github/actions/docker-build
       with:
@@ -46,6 +55,7 @@ jobs:
         image-name: ${{ env.IMAGE_NAME }}
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+        version: ${{ steps.version.outputs.rollback_version }}
 
     - name: Deploy rollback
       uses: ./.github/actions/rollback-deploy

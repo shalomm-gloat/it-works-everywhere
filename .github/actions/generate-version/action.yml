@@ -1,0 +1,42 @@
+name: 'Generate Version'
+description: 'Generate semantic version tags based on branch and package.json'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate version tag
+      id: version
+      shell: bash
+      run: |
+        # Get base version from package.json
+        BASE_VERSION=$(node -p "require('./package.json').version")
+        
+        # Determine environment suffix based on branch
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          VERSION_SUFFIX=""
+          ENV_SUFFIX=""
+        elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+          VERSION_SUFFIX="-dev"
+          ENV_SUFFIX="dev"
+        elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+          VERSION_SUFFIX="-stg"
+          ENV_SUFFIX="stg"
+        else
+          VERSION_SUFFIX="-dev"
+          ENV_SUFFIX="dev"
+        fi
+        
+        # Add build metadata with short commit SHA
+        COMMIT_SHA=$(git rev-parse --short HEAD)
+        FULL_VERSION="v${BASE_VERSION}${VERSION_SUFFIX}+${COMMIT_SHA}"
+        
+        echo "version=${FULL_VERSION}" >> $GITHUB_OUTPUT
+        echo "base_version=${BASE_VERSION}" >> $GITHUB_OUTPUT
+        echo "version_suffix=${VERSION_SUFFIX}" >> $GITHUB_OUTPUT
+        echo "env_suffix=${ENV_SUFFIX}" >> $GITHUB_OUTPUT
+        echo "commit_sha=${COMMIT_SHA}" >> $GITHUB_OUTPUT
+        
+        echo "Generated version: ${FULL_VERSION}"
+        echo "Base version: ${BASE_VERSION}"
+        echo "Environment suffix: ${VERSION_SUFFIX}"
+        echo "Commit SHA: ${COMMIT_SHA}"
