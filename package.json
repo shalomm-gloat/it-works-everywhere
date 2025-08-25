@@ -1,5 +1,5 @@
 {
-  "name": "it-works-on-my-machine",
+  "name": "it-works-everywhere",
   "version": "1.0.0",
   "description": "A simple Node.js microservice with CI/CD pipeline",
   "main": "server.js",

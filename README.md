@@ -1,4 +1,4 @@
-# It Works On My Machine - Production-Ready CI/CD
+# It Works Everywhere - Production-Ready CI/CD
 
 A Node.js Express microservice demonstrating **production-ready CI/CD practices** with automated testing, security scanning, and containerized deployment.
 
@@ -29,7 +29,7 @@ A Node.js Express microservice demonstrating **production-ready CI/CD practices*
 - **✅ Deployment Automation**: Zero-click deployments with Docker Hub integration
 
 ### 🐳 Container Registry
-- **Docker Hub**: [shalommeoded92/it-works-on-my-machine](https://hub.docker.com/repository/docker/shalommeoded92/it-works-on-my-machine/general)
+- **Docker Hub**: [shalommeoded92/it-works-everywhere](https://hub.docker.com/repository/docker/shalommeoded92/it-works-everywhere/general)
 - **Images**: Automatically built and pushed on every deployment
 - **Tags**: Branch-based tagging (main, staging, develop, feature branches)
 
@@ -93,7 +93,7 @@ Before using the CI/CD pipeline, you must configure branch protection rules manu
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd it-works-on-my-machine
+cd it-works-everywhere
 
 # Install dependencies
 make install
@@ -164,7 +164,7 @@ The pipeline uses modular, reusable actions located in `.github/actions/`:
 
 ### 🐳 Container Images
 All container images are automatically built and pushed to:
-- **Registry**: [Docker Hub - shalommeoded92/it-works-on-my-machine](https://hub.docker.com/repository/docker/shalommeoded92/it-works-on-my-machine/general)
+- **Registry**: [Docker Hub - shalommeoded92/it-works-everywhere](https://hub.docker.com/repository/docker/shalommeoded92/it-works-everywhere/general)
 - **Build Process**: Multi-stage Docker builds with security scanning
 - **Deployment**: Images pulled from registry for each environment
 
@@ -208,17 +208,17 @@ Returns application health status.
 
 ### Build Image
 ```bash
-docker build -t it-works-on-my-machine .
+docker build -t it-works-everywhere .
 ```
 
 ### Run Container
 ```bash
-docker run -p 3000:3000 it-works-on-my-machine
+docker run -p 3000:3000 it-works-everywhere
 ```
 
 ### Pull from Registry
 ```bash
-docker pull ghcr.io/<username>/it-works-on-my-machine:latest
+docker pull ghcr.io/<username>/it-works-everywhere:latest
 ```
 
 ## 🧪 Testing
