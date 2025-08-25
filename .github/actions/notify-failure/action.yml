@@ -22,10 +22,11 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
+          // Create environment display name (capitalized)
           const environment = '${{ inputs.environment }}';
           const environmentName = environment.charAt(0).toUpperCase() + environment.slice(1);
           
-          // Create failure notification
+          // Create failure notification with fallback values for missing data
           const message = `❌ **${environmentName} Deployment Failed**
           
           **Repository**: ${context.repo.owner}/${context.repo.repo}
@@ -42,7 +43,7 @@ runs:
           console.log('🚨 FAILURE NOTIFICATION:');
           console.log(message);
           
-          // Create GitHub issue for failure tracking (only if permissions allow)
+          // Create GitHub issue for failure tracking (optional - depends on permissions)
           try {
             const issueResponse = await github.rest.issues.create({
               owner: context.repo.owner,

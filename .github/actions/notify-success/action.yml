@@ -28,10 +28,11 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
+          // Create environment display name (capitalized)
           const environment = '${{ inputs.environment }}';
           const environmentName = environment.charAt(0).toUpperCase() + environment.slice(1);
           
-          // Create deployment notification
+          // Create deployment notification with key deployment details
           const message = `✅ **${environmentName} Deployment Successful**
           
           **Repository**: ${context.repo.owner}/${context.repo.repo}
@@ -58,6 +59,7 @@ runs:
               });
               console.log('✅ Success comment created on PR');
             } catch (error) {
+              // Graceful fallback if permissions are insufficient
               console.log('⚠️ Could not create PR comment (this is normal for some permissions)');
               console.log('Error details:', error.message);
             }
