@@ -73,7 +73,7 @@ jobs:
         image-name: ${{ env.IMAGE_NAME }}
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        version: ${{ steps.version.outputs.version }}
+        version: ${{ steps.version.outputs.version || 'latest' }}
 
     - name: Deploy application
       uses: ./.github/actions/deploy
