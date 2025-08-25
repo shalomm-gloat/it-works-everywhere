@@ -31,53 +31,53 @@ runs:
       id: version
       shell: bash
       run: |
-        # Get base version from package.json
+        # Get base version from package.json (source of truth)
         BASE_VERSION=$(node -p "require('./package.json').version")
         
-        # Determine environment suffix based on branch (SemVer compliant)
+        # Branch-based versioning strategy (SemVer 2.0.0 compliant)
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-          # Production: Clean version without pre-release suffix
+          # Production: Clean version for stability
           VERSION_SUFFIX=""
           ENV_SUFFIX="prod"
           VERSION_TYPE="release"
         elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
-          # Development: Pre-release with dev suffix
+          # Development: -dev suffix for integration testing
           VERSION_SUFFIX="-dev"
           ENV_SUFFIX="dev"
           VERSION_TYPE="pre-release"
         elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
-          # Staging: Pre-release with stg suffix
+          # Staging: -stg suffix for pre-production validation
           VERSION_SUFFIX="-stg"
           ENV_SUFFIX="stg"
           VERSION_TYPE="pre-release"
         elif [[ "${{ github.ref }}" =~ refs/heads/release/.* ]]; then
-          # Release candidate: Pre-release with rc suffix
+          # Release candidates: -rc.X for final testing
           RC_NUMBER=$(echo "${{ github.ref }}" | sed 's|refs/heads/release/||')
           VERSION_SUFFIX="-rc.${RC_NUMBER}"
           ENV_SUFFIX="rc"
           VERSION_TYPE="release-candidate"
         elif [[ "${{ github.ref }}" =~ refs/heads/hotfix/.* ]]; then
-          # Hotfix: Pre-release with hotfix suffix
+          # Hotfixes: -hotfix for emergency fixes
           VERSION_SUFFIX="-hotfix"
           ENV_SUFFIX="hotfix"
           VERSION_TYPE="pre-release"
         else
-          # Feature branches: Pre-release with dev suffix
+          # Feature branches: -dev suffix for consistency
           VERSION_SUFFIX="-dev"
           ENV_SUFFIX="dev"
           VERSION_TYPE="pre-release"
         fi
         
-        # Add build metadata with short commit SHA (SemVer 2.0.0 compliant)
+        # Build metadata for traceability (not included in Docker tags)
         COMMIT_SHA=$(git rev-parse --short HEAD)
         BUILD_DATE=$(date -u +"%Y%m%d.%H%M%S")
         
-        # Create clean Docker version
+        # Create Docker-safe version (no build metadata for compatibility)
         if [ -n "$VERSION_SUFFIX" ]; then
-          # Pre-release version: v1.0.0-dev
+          # Pre-release: v1.0.0-dev
           DOCKER_VERSION="v${BASE_VERSION}${VERSION_SUFFIX}"
         else
-          # Release version: v1.0.0
+          # Production: v1.0.0
           DOCKER_VERSION="v${BASE_VERSION}"
         fi
         
