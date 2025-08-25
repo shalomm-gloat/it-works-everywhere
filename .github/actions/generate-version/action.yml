@@ -13,13 +13,16 @@ runs:
         # Determine environment suffix based on branch
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           VERSION_SUFFIX=""
-          ENV_SUFFIX=""
+          ENV_SUFFIX="prod"
         elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
           VERSION_SUFFIX="-dev"
           ENV_SUFFIX="dev"
         elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
           VERSION_SUFFIX="-stg"
           ENV_SUFFIX="stg"
+        elif [[ "${{ github.ref }}" =~ refs/heads/hotfix/.* ]]; then
+          VERSION_SUFFIX="-hotfix"
+          ENV_SUFFIX="hotfix"
         else
           VERSION_SUFFIX="-dev"
           ENV_SUFFIX="dev"
