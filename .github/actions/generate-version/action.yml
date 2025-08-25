@@ -1,10 +1,34 @@
 name: 'Generate Version'
 description: 'Generate semantic version tags based on branch and package.json'
 
+outputs:
+  version:
+    description: 'Clean version string'
+    value: ${{ steps.version.outputs.version }}
+  base_version:
+    description: 'Base version from package.json'
+    value: ${{ steps.version.outputs.base_version }}
+  version_suffix:
+    description: 'Pre-release suffix'
+    value: ${{ steps.version.outputs.version_suffix }}
+  env_suffix:
+    description: 'Environment identifier'
+    value: ${{ steps.version.outputs.env_suffix }}
+  version_type:
+    description: 'Version classification'
+    value: ${{ steps.version.outputs.version_type }}
+  commit_sha:
+    description: 'Short commit SHA'
+    value: ${{ steps.version.outputs.commit_sha }}
+  build_date:
+    description: 'Build timestamp'
+    value: ${{ steps.version.outputs.build_date }}
+
 runs:
   using: 'composite'
   steps:
     - name: Generate version tag
+      id: version
       shell: bash
       run: |
         # Get base version from package.json
@@ -48,17 +72,17 @@ runs:
         COMMIT_SHA=$(git rev-parse --short HEAD)
         BUILD_DATE=$(date -u +"%Y%m%d.%H%M%S")
         
-        # Create SemVer compliant version
+        # Create clean Docker version
         if [ -n "$VERSION_SUFFIX" ]; then
-          # Pre-release version: v1.0.0-dev+abc123.20240825.145920
-          FULL_VERSION="v${BASE_VERSION}${VERSION_SUFFIX}+${COMMIT_SHA}.${BUILD_DATE}"
+          # Pre-release version: v1.0.0-dev
+          DOCKER_VERSION="v${BASE_VERSION}${VERSION_SUFFIX}"
         else
-          # Release version: v1.0.0+abc123.20240825.145920
-          FULL_VERSION="v${BASE_VERSION}+${COMMIT_SHA}.${BUILD_DATE}"
+          # Release version: v1.0.0
+          DOCKER_VERSION="v${BASE_VERSION}"
         fi
         
         # Set outputs for workflow use
-        echo "version=${FULL_VERSION}" >> $GITHUB_OUTPUT
+        echo "version=${DOCKER_VERSION}" >> $GITHUB_OUTPUT
         echo "base_version=${BASE_VERSION}" >> $GITHUB_OUTPUT
         echo "version_suffix=${VERSION_SUFFIX}" >> $GITHUB_OUTPUT
         echo "env_suffix=${ENV_SUFFIX}" >> $GITHUB_OUTPUT
@@ -67,7 +91,7 @@ runs:
         echo "build_date=${BUILD_DATE}" >> $GITHUB_OUTPUT
         
         # Log version information
-        echo "Generated SemVer version: ${FULL_VERSION}"
+        echo "Generated clean version: ${DOCKER_VERSION}"
         echo "Base version: ${BASE_VERSION}"
         echo "Pre-release suffix: ${VERSION_SUFFIX}"
         echo "Environment: ${ENV_SUFFIX}"

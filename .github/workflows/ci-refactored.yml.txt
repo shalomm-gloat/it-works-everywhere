@@ -35,19 +35,19 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'yarn'
+        cache: 'npm'
 
     - name: Install dependencies
-      run: yarn install --frozen-lockfile
+      run: npm ci
 
     - name: Run linting
-      run: yarn lint
+      run: npm run lint
 
     - name: Run tests
-      run: yarn test
+      run: npm test
 
     - name: Security audit
-      run: yarn audit --level moderate
+      run: npm audit --audit-level=moderate
 
     - name: Health check
       run: |
@@ -99,18 +99,22 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=${{ steps.version.outputs.version }}
+          type=raw,value=latest,enable={{is_default_branch}}
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
-        tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-        labels: |
-          org.opencontainers.image.version=${{ steps.version.outputs.version }}
-          org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
-          org.opencontainers.image.revision=${{ github.sha }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
 
     # Deploy application (platform-agnostic)
     - name: Deploy application

@@ -60,7 +60,7 @@ When triggered manually, the action respects the user-selected environment:
 
 ## Environment URLs
 
-Each environment has a specific URL which are not real :):
+Each environment has a specific URL which are not real :) :
 
 - **Development**: `https://mydev.getthemilkshake.com`
 - **Staging**: `https://mystaging.getthemilkshake.com`
