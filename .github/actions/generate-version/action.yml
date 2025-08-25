@@ -28,6 +28,7 @@ runs:
   using: 'composite'
   steps:
     - name: Generate version tag
+      id: version
       shell: bash
       run: |
         # Get base version from package.json
