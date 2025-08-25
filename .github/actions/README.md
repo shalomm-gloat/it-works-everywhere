@@ -1,104 +1,82 @@
-# Reusable GitHub Actions Short
+# GitHub Actions Overview
 
-## **For additional info please check each action's ReadMe file**
+This directory contains reusable GitHub Actions that break down the CI/CD pipeline into modular components.
 
-This directory contains reusable GitHub Actions that break down the CI/CD pipeline into modular, maintainable components.
+## Core Actions
 
-## Actions Overview
+### `generate-version/`
+- **Purpose**: Generate semantic version tags based on branch
+- **Outputs**: version, base_version, version_suffix, env_suffix
+- **Usage**: Used in CI workflow for versioning
 
-### Core Actions
+### `get-environment/`
+- **Purpose**: Determine target environment based on branch
+- **Outputs**: environment
+- **Usage**: Used in CI workflow for environment mapping
 
-#### `test-quality/`
-- **Purpose**: Run all testing and quality gates
-- **Steps**: Node.js setup, dependency installation, linting, testing, security audit, health checks
-- **Usage**: Used in CI workflow for quality validation
-
-#### `docker-build/`
-- **Purpose**: Build and push Docker images to registry
-- **Steps**: Docker Buildx setup, registry login, metadata extraction, build and push
-- **Inputs**: registry, image-name, username, password
-- **Usage**: Used in CI, release, and rollback workflows
-
-#### `deploy/`
-- **Purpose**: Deploy application to specified environment
-- **Steps**: Environment-specific deployment, summary generation
-- **Inputs**: environment
+### `deploy/`
+- **Purpose**: Platform-agnostic application deployment
+- **Platforms**: AWS ECS, simulated
+- **Outputs**: deployment-status, deployment-url, deployment-duration
 - **Usage**: Used in CI workflow for deployment
 
-### Notification Actions
+## Notification Actions
 
-#### `notify-success/`
+### `notify-success/`
 - **Purpose**: Send success notifications for deployments
-- **Steps**: GitHub comments, email notifications (simulated)
-- **Inputs**: environment, registry, image-name
+- **Features**: GitHub comments, email notifications
 - **Usage**: Used in CI workflow on successful deployments
 
-#### `notify-failure/`
+### `notify-failure/`
 - **Purpose**: Send failure notifications for deployments
-- **Steps**: GitHub issues, email notifications (simulated)
-- **Inputs**: environment
+- **Features**: GitHub issues, email notifications
 - **Usage**: Used in CI workflow on failed deployments
 
-### Utility Actions
+## Rollback Actions
 
-#### `get-environment/`
-- **Purpose**: Determine target environment based on branch or workflow dispatch
-- **Outputs**: environment
-- **Usage**: Used in CI workflow to dynamically determine deployment target
-
-#### `generate-release/`
-- **Purpose**: Generate release notes and create GitHub releases
-- **Steps**: Release notes generation, GitHub release creation, summary
-- **Inputs**: tag-name
-- **Usage**: Used in release workflow
-
-### Rollback Actions
-
-#### `validate-version/`
+### `validate-version/`
 - **Purpose**: Validate version exists and checkout specific version
-- **Steps**: Version validation, git checkout
-- **Inputs**: version
 - **Usage**: Used in rollback workflow
 
-#### `rollback-deploy/`
+### `rollback-deploy/`
 - **Purpose**: Deploy rollback version and perform health checks
-- **Steps**: Rollback deployment, health checks, summary
-- **Inputs**: version, environment, reason, registry, image-name
 - **Usage**: Used in rollback workflow
 
-#### `create-rollback-issue/`
+### `create-rollback-issue/`
 - **Purpose**: Create GitHub issue for rollback tracking
-- **Steps**: GitHub issue creation, rollback notification
-- **Inputs**: version, environment, reason, registry, image-name
 - **Usage**: Used in rollback workflow
+
+## Release Actions
+
+### `generate-release/`
+- **Purpose**: Generate release notes and create GitHub releases
+- **Usage**: Used in release workflow
 
 ## Benefits
 
-1. **Modularity**: Each action has a single responsibility
-2. **Reusability**: Actions can be used across multiple workflows
-3. **Maintainability**: Changes to functionality only need to be made in one place
-4. **Testability**: Individual actions can be tested independently
-5. **Readability**: Workflows are cleaner and easier to understand
+- **Modularity**: Each action has a single responsibility
+- **Reusability**: Actions can be used across multiple workflows
+- **Maintainability**: Changes only need to be made in one place
+- **Testability**: Individual actions can be tested independently
 
 ## Usage Example
 
 ```yaml
-- name: Run tests and quality gates
-  uses: ./.github/actions/test-quality
+- name: Generate version
+  uses: ./.github/actions/generate-version
 
-- name: Build and push Docker image
-  uses: ./.github/actions/docker-build
+- name: Deploy application
+  uses: ./.github/actions/deploy
   with:
-    registry: docker.io
-    image-name: myapp
-    username: ${{ secrets.DOCKER_USERNAME }}
-    password: ${{ secrets.DOCKER_PASSWORD }}
+    environment: production
+    image: docker.io/myapp:v1.0.0
+    version: v1.0.0
+    platform: simulated
 ```
 
 ## Best Practices
 
-1. **Input Validation**: All actions validate their inputs
-2. **Error Handling**: Actions handle errors gracefully
-3. **Documentation**: Each action has clear description and usage examples
-4. **Consistency**: Actions follow consistent naming and structure patterns
-5. **Security**: Sensitive operations are properly secured with secrets
+- **Input Validation**: All actions validate their inputs
+- **Error Handling**: Actions handle errors gracefully
+- **Documentation**: Each action has clear description and usage examples
+- **Security**: Sensitive operations use GitHub secrets

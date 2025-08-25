@@ -19,6 +19,7 @@ runs:
       id: env
       shell: bash
       run: |
+        # Environment mapping: manual dispatch overrides branch-based logic
         if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           ENV="${{ inputs.workflow-dispatch-env }}"
         elif [ "${{ github.ref }}" = "refs/heads/main" ]; then

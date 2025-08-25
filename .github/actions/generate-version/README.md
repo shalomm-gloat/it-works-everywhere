@@ -1,33 +1,29 @@
 # Generate Version Action
 
-This action generates clean version tags based on the current branch and the version specified in `package.json`.
+Generates semantic version tags based on branch and package.json.
 
-## How it works
+## Branch-based Versioning
 
-The action creates clean, simple version tags based on the current branch:
-
-### **Branch-based Versioning**:
-- **main branch**: Release version (e.g., `v1.0.0`)
-- **develop branch**: Development pre-release (e.g., `v1.0.0-dev`)
-- **staging branch**: Staging pre-release (e.g., `v1.0.0-stg`)
-- **release/* branches**: Release candidates (e.g., `v1.0.0-rc.1`)
-- **hotfix/* branches**: Hotfix pre-release (e.g., `v1.0.0-hotfix`)
-- **feature branches**: Development pre-release (e.g., `v1.0.0-dev`)
-
-### **Clean Versioning**:
-- **MAJOR.MINOR.PATCH**: From `package.json`
-- **Pre-release**: Environment-specific suffixes (`-dev`, `-stg`, `-rc.1`, `-hotfix`)
-- **Simple format**: No build metadata, just clean version numbers
+| Branch | Version Format | Example |
+|--------|---------------|---------|
+| `main` | `v{version}` | `v1.0.0` |
+| `develop` | `v{version}-dev` | `v1.0.0-dev` |
+| `staging` | `v{version}-stg` | `v1.0.0-stg` |
+| `release/*` | `v{version}-rc.{number}` | `v1.0.0-rc.1` |
+| `hotfix/*` | `v{version}-hotfix` | `v1.0.0-hotfix` |
+| `feature/*` | `v{version}-dev` | `v1.0.0-dev` |
 
 ## Outputs
 
-- `version`: Clean version string (e.g., `v1.0.0-dev`)
-- `base_version`: Base version from package.json (e.g., `1.0.0`)
-- `version_suffix`: Pre-release suffix (e.g., `-dev`, `-stg`, `-rc.1`, `-hotfix`, or empty)
-- `env_suffix`: Environment identifier (e.g., `dev`, `stg`, `rc`, `hotfix`, `prod`)
-- `version_type`: Version classification (e.g., `pre-release`, `release-candidate`, `release`)
-- `commit_sha`: Short commit SHA (e.g., `abc123`)
-- `build_date`: Build timestamp (e.g., `20240825.145920`)
+| Output | Description | Example |
+|--------|-------------|---------|
+| `version` | Clean version string | `v1.0.0-dev` |
+| `base_version` | Version from package.json | `1.0.0` |
+| `version_suffix` | Pre-release suffix | `-dev` |
+| `env_suffix` | Environment identifier | `dev` |
+| `version_type` | Version classification | `pre-release` |
+| `commit_sha` | Short commit SHA | `abc123` |
+| `build_date` | Build timestamp | `20240825.145920` |
 
 ## Usage
 
@@ -39,16 +35,3 @@ The action creates clean, simple version tags based on the current branch:
 - name: Use version
   run: echo "Version: ${{ steps.version.outputs.version }}"
 ```
-
-## Version Format
-
-Creates clean, simple version tags:
-- **Release**: `v{MAJOR}.{MINOR}.{PATCH}`
-- **Pre-release**: `v{MAJOR}.{MINOR}.{PATCH}{PRERELEASE}`
-
-### Examples:
-- **Production**: `v1.0.0`
-- **Development**: `v1.0.0-dev`
-- **Staging**: `v1.0.0-stg`
-- **Release Candidate**: `v1.0.0-rc.1`
-- **Hotfix**: `v1.0.0-hotfix`

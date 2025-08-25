@@ -1,37 +1,95 @@
 name: 'Deploy Application'
-description: 'Deploy application to specified environment'
+description: 'Platform-agnostic application deployment with extensibility'
 
 inputs:
   environment:
-    description: 'Environment to deploy to'
+    description: 'Target deployment environment'
     required: true
-    default: 'development'
+  image:
+    description: 'Full Docker image name with tag'
+    required: true
+  version:
+    description: 'Application version being deployed'
+    required: true
+  platform:
+    description: 'Deployment platform (aws-ecs, simulated)'
+    required: false
+    default: 'simulated'
+
+outputs:
+  deployment-status:
+    description: 'Deployment status (success/failed)'
+    value: ${{ steps.deploy.outputs.status }}
+  deployment-url:
+    description: 'Deployment URL (if available)'
+    value: ${{ steps.deploy.outputs.url }}
+  deployment-duration:
+    description: 'Deployment duration in seconds'
+    value: ${{ steps.deploy.outputs.duration }}
 
 runs:
   using: 'composite'
   steps:
-    - name: Deploy
+    - name: Deploy application
+      id: deploy
       shell: bash
       run: |
-        ENV="${{ inputs.environment }}"
+        echo "🚀 Starting deployment process..."
+        echo "📋 Deployment Details:"
+        echo "   Environment: ${{ inputs.environment }}"
+        echo "   Image: ${{ inputs.image }}"
+        echo "   Version: ${{ inputs.version }}"
+        echo "   Platform: ${{ inputs.platform }}"
         
-        echo "🚀 Deploying to $ENV..."
-        echo "✅ $ENV deployment completed"
+        START_TIME=$(date +%s)
         
-        if [ "$ENV" = "production" ]; then
-          echo "🌐 Production URL: https://myprod.getthemilkshake.com"
-        elif [ "$ENV" = "staging" ]; then
-          echo "🌐 Staging URL: https://mystaging.getthemilkshake.com"
-        else
-          echo "🌐 Development URL: https://mydev.getthemilkshake.com"
-        fi
+        case "${{ inputs.platform }}" in
+          "aws-ecs")
+            echo "☁️ Deploying to AWS ECS Blah blah also I would use gha ready..."
+            # aws ecs update-service --cluster my-cluster --service my-service --force-new-deployment
+            echo "✅ AWS ECS deployment completed"
+            DEPLOYMENT_URL="https://ecs.${{ inputs.environment }}.example.com"
+            ;;
+            
+          "simulated"|*)
+            echo "🎭 Simulating deployment (demo mode)..."
+            sleep 5  # Simulate deployment time
+            echo "✅ Simulated deployment completed"
+            
+            case "${{ inputs.environment }}" in
+              "production")
+                DEPLOYMENT_URL="https://myprod.getthemilkshake.com"
+                ;;
+              "staging")
+                DEPLOYMENT_URL="https://mystaging.getthemilkshake.com"
+                ;;
+              *)
+                DEPLOYMENT_URL="https://mydev.getthemilkshake.com"
+                ;;
+            esac
+            ;;
+        esac
+        
+        END_TIME=$(date +%s)
+        DURATION=$((END_TIME - START_TIME))
+        
+        echo "✅ Deployment to ${{ inputs.environment }} completed successfully"
+        echo "⏱️  Deployment duration: ${DURATION} seconds"
+        echo "🌐 Deployment URL: ${DEPLOYMENT_URL}"
+        
+        
+        echo "status=success" >> $GITHUB_OUTPUT
+        echo "url=${DEPLOYMENT_URL}" >> $GITHUB_OUTPUT
+        echo "duration=${DURATION}" >> $GITHUB_OUTPUT
 
-    - name: Deploy summary
+    - name: Create deployment summary
       shell: bash
       run: |
-        ENV="${{ inputs.environment }}"
-        
-        echo "## 🚀 ${ENV^} Deployment Complete" >> $GITHUB_STEP_SUMMARY
-        echo "- **Environment**: ${ENV^}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment**: ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Image**: ${{ inputs.image }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform**: ${{ inputs.platform }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "- **Duration**: ${{ steps.deploy.outputs.duration }} seconds" >> $GITHUB_STEP_SUMMARY
+        echo "- **URL**: ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
