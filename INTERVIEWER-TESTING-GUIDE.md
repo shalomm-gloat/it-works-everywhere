@@ -17,6 +17,7 @@ A comprehensive guide to test the production-ready CI/CD pipeline with progressi
 
 ### **1. Version Preview on PRs**
 ```bash
+gco develop && git pull
 git checkout -b feature/test-preview
 echo "# Test feature" >> TEST.md
 git add TEST.md && git commit -m "feat: add test feature"
@@ -31,10 +32,10 @@ git push origin feature/test-preview
 git checkout develop && git merge feature/test-preview && git push origin develop
 
 # Staging  
-git checkout staging && git merge develop && git push origin staging
+git pull && git checkout staging && git merge develop && git push origin staging
 
 # Production
-git checkout main && git merge staging && git push origin main
+git pull && git checkout main && git merge staging && git push origin main
 ```
 **Watch**: 
 - **Dev/Staging**: No version bump, same version flows through
