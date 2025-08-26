@@ -60,7 +60,7 @@ git checkout -b "feature/test-1"
 echo "# Dev feature" >> dev-feature.md
 git add dev-feature.md
 git commit -m "feat: add development feature"
-git push origin develop
+git push origin feature/test-1
 # Expected: Deploys to development, no version bump
 
 # 2. Staging Environment (merge develop into staging)
