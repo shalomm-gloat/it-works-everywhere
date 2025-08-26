@@ -1,5 +1,12 @@
 name: CI/CD Pipeline (Refactored with Official Actions)
 
+# Explicit permissions for GitHub API access
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
 on:
   push:
     branches: [main, develop, staging]
@@ -25,7 +32,7 @@ jobs:
   versioning:
     runs-on: ubuntu-latest
     name: 'Version Management'
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
     environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/develop' && 'staging' || (github.ref == 'refs/heads/staging' && 'staging' || 'development'))) }}
     env:
       GH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }}
@@ -83,8 +90,11 @@ jobs:
       with:
         environment: development
         version: 'N/A'
+        error: 'Test job failed - check workflow logs for details'
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
+        github-token: ${{ github.token }}
+        email-to: ${{ github.event.pusher.email }}
 
   build:
     name: Build & Deploy
@@ -173,13 +183,18 @@ jobs:
         version: ${{ steps.version.outputs.version }}
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
+        github-token: ${{ github.token }}
+        email-to: ${{ github.event.pusher.email }}
 
     # Use custom notify-failure action (already uses official actions internally)
     - name: Notify failure
       if: failure()
       uses: ./.github/actions/notify-failure
       with:
-        environment: ${{ steps.env.outputs.environment }}
+        environment: ${{ env.DEPLOYMENT_ENV }}
         version: ${{ steps.version.outputs.version }}
+        error: 'Deployment failed - check workflow logs for details'
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
+        github-token: ${{ github.token }}
+        email-to: ${{ github.event.pusher.email }}

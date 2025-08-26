@@ -1,18 +1,18 @@
 name: 'Notify Success'
-description: 'Send success notifications for deployment'
+description: 'Send success notifications via email and GitHub comments'
 
 inputs:
   environment:
-    description: 'Environment that was deployed'
+    description: 'Deployment environment'
     required: true
   registry:
-    description: 'Docker registry URL'
+    description: 'Docker registry'
     required: true
   image-name:
     description: 'Docker image name'
     required: true
   version:
-    description: 'Version that was deployed'
+    description: 'Deployed version'
     required: true
   brevo-smtp-user:
     description: 'Brevo SMTP username'
@@ -20,12 +20,21 @@ inputs:
   brevo-smtp-key:
     description: 'Brevo SMTP password'
     required: true
+  github-token:
+    description: 'GitHub token for API access'
+    required: true
+  email-to:
+    description: 'Email recipient(s)'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
   steps:
-    - name: Notify deployment success
+    - name: Create deployment notification
       uses: actions/github-script@v6
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
       with:
         script: |
           // Create environment display name (capitalized)
@@ -65,7 +74,9 @@ runs:
             }
           }
 
-    - name: Send success email notification
+    # Only send email if recipient is specified
+    - name: Send email notification
+      if: inputs.email-to != ''
       uses: dawidd6/action-send-mail@v6
       with:
         server_address: smtp.gmail.com
@@ -74,8 +85,8 @@ runs:
         username: ${{ inputs.brevo-smtp-user }}
         password: ${{ inputs.brevo-smtp-key }}
         subject: "✅ ${{ inputs.environment }} Deployment Successful - ${{ github.repository }}"
-        to: ${{ github.event.pusher.email }}
         from: "<shalommeoded@gmail.com>"
+        to: ${{ inputs.email-to }}
         body: |
           Hello ${{ github.actor }},
           
@@ -87,11 +98,7 @@ runs:
           - Version: ${{ inputs.version }}
           - Commit: ${{ github.sha }}
           - Environment: ${{ inputs.environment }}
-          - URL: ${{ 
-            inputs.environment == 'production' && 'https://myprod.getthemilkshake.com' || 
-            inputs.environment == 'staging' && 'https://mystaging.getthemilkshake.com' || 
-            'https://mydev.getthemilkshake.com' 
-          }}
+          - URL: https://my${{ inputs.environment }}.getthemilkshake.com
           
           🎉 All quality gates passed and deployment completed successfully!
           

@@ -1,15 +1,28 @@
 # Notify Failure Action
 
-Sends failure notifications for deployment failures.
+Sends failure notifications via email and GitHub comments when deployments fail.
+
+## Features
+
+- **Email Notifications**: Uses Brevo SMTP for reliable email delivery
+- **GitHub Comments**: Creates comments on PRs for tracking failures
+- **Error Details**: Includes specific error information
+- **Workflow Links**: Provides direct links to workflow logs
 
 ## Inputs
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `environment` | Environment that failed deployment | Yes | - |
-| `version` | Version that failed to deploy | No | `N/A` |
-| `brevo-smtp-user` | Brevo SMTP username | Yes | - |
-| `brevo-smtp-key` | Brevo SMTP password | Yes | - |
+| `environment` | Deployment environment (e.g., development, staging, production) | ✅ | - |
+| `version` | Deployed version tag | ✅ | - |
+| `error` | Error message describing the failure | ✅ | - |
+| `brevo-smtp-user` | Brevo SMTP username | ✅ | - |
+| `brevo-smtp-key` | Brevo SMTP password | ✅ | - |
+| `github-token` | GitHub token for API access | ✅ | - |
+
+## Outputs
+
+None
 
 ## Usage
 
@@ -18,25 +31,22 @@ Sends failure notifications for deployment failures.
   if: failure()
   uses: ./.github/actions/notify-failure
   with:
-    environment: ${{ steps.env.outputs.environment }}
+    environment: ${{ env.DEPLOYMENT_ENV }}
     version: ${{ steps.version.outputs.version }}
+    error: 'Deployment failed - check workflow logs for details'
     brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
     brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
+    github-token: ${{ secrets.GH_AUTH_TOKEN }}
 ```
 
-## Notification Channels
+## Behavior
 
-### GitHub Issues
-- Creates detailed failure tracking issues
-- Includes failure information and next steps
-- Requires issue creation permissions
+- **PR Events**: Creates a comment on the PR with failure details
+- **Direct Pushes**: Logs notification without creating comments
+- **Email**: Sends failure notification to configured recipients
+- **Error Handling**: Gracefully handles permission issues
 
-### Email Notifications
-- Sends failure alerts via Brevo SMTP
-- Includes failure details and log links
+## Dependencies
 
-## Error Handling
-
-- Graceful handling when GitHub permissions are insufficient
-- Continues execution even if email fails
-- Uses `N/A` for missing information
+- `actions/github-script@v6` - For GitHub API interactions
+- `dawidd6/action-send-mail@v6` - For email notifications
