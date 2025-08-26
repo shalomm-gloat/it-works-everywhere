@@ -29,6 +29,7 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 - **Conventional Commits**: Automatic versioning (`feat:`, `fix:`, `BREAKING CHANGE`)
 - **Custom Actions**: Modular, reusable components
 - **Quality Gates**: Testing, linting, security scanning
+- **YAML Validation**: Automated syntax and structure validation
 - **Zero-Click Deployments**: Push to branch = deploy to environment
 
 ### **Pipeline Components**
@@ -37,6 +38,7 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 - **Email Notifications**: Success/failure alerts
 - **Health Monitoring**: Using existing `/health` endpoint
 - **Rollback Capability**: Emergency rollback workflow (`rollback.yml`)
+- **YAML Validation**: Automated validation of workflows and actions
 - **Testing Guide**: Comprehensive testing instructions (`INTERVIEWER-TESTING-GUIDE.md`)
 
 ### **🔄 CI/CD Workflow Diagram**
@@ -184,6 +186,13 @@ FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" || echo "0")
 - **Deployment**: GitHub Actions status tracking
 - **Notifications**: Email alerts for all events
 
+### **YAML Validation**
+- **Automated Validation**: Syntax and structure checking for all YAML files
+- **Workflow Validation**: Ensures required fields (`on`, `jobs`) are present
+- **Action Validation**: Validates custom action structure (`name`, `runs`)
+- **Parser Issue Handling**: Robust handling of YAML parser edge cases
+- **Early Error Detection**: Catches configuration errors before deployment
+
 ### **Security Features**
 - **Vulnerability Scanning**: `yarn audit --level moderate`
 - **Secret Management**: GitHub Secrets, no hardcoded values
@@ -274,6 +283,7 @@ Production (main) → Version Bump → Release Tag → Monitoring
 | **Pipeline** | Automated steps: build, test, deploy |
 | **Workflow** | GitHub Actions automated process |
 | **Action** | Reusable unit of code |
+| **YAML Validation** | Automated syntax and structure checking |
 
 ### **Deployment Terms**
 | Term | Definition |
