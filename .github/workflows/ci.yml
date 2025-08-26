@@ -142,10 +142,15 @@ jobs:
         new-version: ${{ needs.versioning.outputs.new-version }}
         github-token: ${{ github.token }}
 
-    # Custom action for semantic versioning with environment-specific suffixes
-    - name: Generate version tag
+    # Use version from versioning job (conventional commits)
+    - name: Set version for deployment
       id: version
-      uses: ./.github/actions/generate-version
+      run: |
+        if [ "${{ needs.versioning.outputs.should-bump }}" = "true" ]; then
+          echo "version=${{ needs.versioning.outputs.new-version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+        fi
 
     # Custom action for environment mapping logic
     - name: Get target environment
