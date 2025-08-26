@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     name: 'Version Management'
     if: github.event_name == 'pull_request'
+    env:
+      GH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }}
     outputs:
       release-type: ${{ steps.version.outputs.release-type }}
       new-version: ${{ steps.version.outputs.new-version }}
