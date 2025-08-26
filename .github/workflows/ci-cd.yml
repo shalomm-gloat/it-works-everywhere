@@ -206,8 +206,8 @@ jobs:
         context: .
         push: true
         tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}  # Environment-specific tag
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest  # Latest tag for easy reference
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         labels: |
           org.opencontainers.image.version=${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
