@@ -1,0 +1,53 @@
+name: 'Version Preview'
+description: 'Show version preview for PRs without making changes'
+
+inputs:
+  github-token:
+    description: 'GitHub token for API access'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install semver dependency
+      shell: bash
+      run: yarn add semver
+
+    - name: Get current version
+      id: current-version
+      shell: bash
+      run: |
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        echo "Current version: $CURRENT_VERSION"
+        echo "result=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Calculate preview version
+      id: preview-version
+      shell: bash
+      env:
+        CURRENT_VERSION: '${{ steps.current-version.outputs.result }}'
+      run: |
+        # Default to patch bump for preview
+        NEW_VERSION=$(node -e "
+          const semver = require('semver');
+          const current = '$CURRENT_VERSION';
+          console.log(semver.inc(current, 'patch'));
+        ")
+        echo "Preview version: $NEW_VERSION"
+        echo "result=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Show version preview
+      shell: bash
+      run: |
+        echo "## 📋 Version Preview"
+        echo ""
+        echo "**Current Version:** ${{ steps.current-version.outputs.result }}"
+        echo "**Preview Version:** ${{ steps.preview-version.outputs.result }}"
+        echo "**Bump Type:** patch (default for main/staging)"
+        echo ""
+        echo "### What will happen on merge:"
+        echo "- Package.json version will be updated to **${{ steps.preview-version.outputs.result }}**"
+        echo "- Docker image will be tagged as **v${{ steps.preview-version.outputs.result }}-prod**"
+        echo "- Changes will be committed and pushed to main"
+        echo ""
+        echo "> 💡 This is a preview only. No changes will be made to this PR." 

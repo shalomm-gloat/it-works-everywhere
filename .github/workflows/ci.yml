@@ -62,6 +62,19 @@ jobs:
           echo "old-version: ${{ steps.version.outputs.old-version }}"
           echo "release-type: ${{ steps.version.outputs.release-type }}"
 
+  version-preview:
+    runs-on: ubuntu-latest
+    name: 'Version Preview'
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Version Preview
+        uses: ./.github/actions/version-preview
+        with:
+          github-token: ${{ github.token }}
+
   test:
     name: Test & Quality Gates
     runs-on: ubuntu-latest
