@@ -39,9 +39,14 @@ runs:
           COMMITS=$(git log --oneline --no-merges $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD)
           
           # Analyze commit types
-          MAJOR_COUNT=$(echo "$COMMITS" | grep -c "BREAKING CHANGE\|major" || echo "0")
-          FEAT_COUNT=$(echo "$COMMITS" | grep -c "feat:" || echo "0")
-          FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" || echo "0")
+          MAJOR_COUNT=$(echo "$COMMITS" | grep -c "BREAKING CHANGE\|major" 2>/dev/null || echo "0")
+          FEAT_COUNT=$(echo "$COMMITS" | grep -c "feat:" 2>/dev/null || echo "0")
+          FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" 2>/dev/null || echo "0")
+          
+          # Ensure we have clean integer values
+          MAJOR_COUNT=$(echo "$MAJOR_COUNT" | tr -d '\n')
+          FEAT_COUNT=$(echo "$FEAT_COUNT" | tr -d '\n')
+          FIX_COUNT=$(echo "$FIX_COUNT" | tr -d '\n')
           
           echo "Commits analysis:"
           echo "  Major changes: $MAJOR_COUNT"
