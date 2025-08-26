@@ -26,6 +26,12 @@ runs:
         echo "Updated package.json:"
         cat package.json | grep '"version"'
         
+        # Debug branch information
+        echo "Event name: ${{ github.event_name }}"
+        echo "Head ref: ${{ github.head_ref }}"
+        echo "Ref name: ${{ github.ref_name }}"
+        echo "Ref: ${{ github.ref }}"
+        
         # Commit and push the version bump
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
@@ -33,8 +39,10 @@ runs:
         git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
         
         # Push to the correct branch (PR head or direct branch)
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
+        if [ "${{ github.event_name }}" = "pull_request" ] && [ -n "${{ github.head_ref }}" ]; then
+          echo "Pushing to PR head branch: ${{ github.head_ref }}"
           git push origin ${{ github.head_ref }}
         else
+          echo "Pushing to direct branch: ${{ github.ref_name }}"
           git push origin ${{ github.ref_name }}
         fi
