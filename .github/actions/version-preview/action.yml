@@ -36,18 +36,31 @@ runs:
         echo "Preview version: $NEW_VERSION"
         echo "result=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-    - name: Show version preview
-      shell: bash
-      run: |
-        echo "## 📋 Version Preview"
-        echo ""
-        echo "**Current Version:** ${{ steps.current-version.outputs.result }}"
-        echo "**Preview Version:** ${{ steps.preview-version.outputs.result }}"
-        echo "**Bump Type:** patch (default for main/staging)"
-        echo ""
-        echo "### What will happen on merge:"
-        echo "- Package.json version will be updated to **${{ steps.preview-version.outputs.result }}**"
-        echo "- Docker image will be tagged as **v${{ steps.preview-version.outputs.result }}-prod**"
-        echo "- Changes will be committed and pushed to main"
-        echo ""
-        echo "> 💡 This is a preview only. No changes will be made to this PR." 
+    - name: Create PR comment with version preview
+      uses: actions/github-script@v6
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      with:
+        script: |
+          const message = `## 📋 Version Preview
+
+          **Current Version:** ${{ steps.current-version.outputs.result }}
+          **Preview Version:** ${{ steps.preview-version.outputs.result }}
+          **Bump Type:** patch (default for main/staging)
+
+          ### What will happen on merge:
+          - Package.json version will be updated to **${{ steps.preview-version.outputs.result }}**
+          - Docker image will be tagged as **v${{ steps.preview-version.outputs.result }}-prod**
+          - Changes will be committed and pushed to main
+
+          > 💡 This is a preview only. No changes will be made to this PR.`;
+
+          // Create comment on PR
+          github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: message
+          });
+
+          console.log('✅ Version preview comment created on PR'); 
