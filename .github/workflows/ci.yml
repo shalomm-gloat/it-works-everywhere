@@ -81,6 +81,8 @@ jobs:
     - name: Bump version
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || (github.event_name == 'pull_request' && (contains(github.event.pull_request.labels.*.name, 'version:major') || contains(github.event.pull_request.labels.*.name, 'version:minor') || contains(github.event.pull_request.labels.*.name, 'version:patch')))
       uses: ./.github/actions/bump-version
+      with:
+        github-token: ${{ github.token }}
 
     # Custom action for semantic versioning with environment-specific suffixes
     - name: Generate version tag
