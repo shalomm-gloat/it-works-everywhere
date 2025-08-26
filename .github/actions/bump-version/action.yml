@@ -18,6 +18,10 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Install semver dependency
+      shell: bash
+      run: yarn add semver
+
     - name: Bump version
       id: bump
       shell: bash
