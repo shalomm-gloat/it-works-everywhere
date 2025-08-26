@@ -14,8 +14,6 @@ runs:
   steps:
     - name: Update package.json version
       shell: bash
-      env:
-        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         NEW_VERSION='${{ inputs.new-version }}'
         echo "Updating package.json to version: $NEW_VERSION"
@@ -28,35 +26,9 @@ runs:
         echo "Updated package.json:"
         cat package.json | grep '"version"'
         
-        # Debug branch information
-        echo "Event name: ${{ github.event_name }}"
-        echo "Head ref: ${{ github.head_ref }}"
-        echo "Ref name: ${{ github.ref_name }}"
-        echo "Ref: ${{ github.ref }}"
-        
-        # Get the correct branch name for PRs using GitHub CLI
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          echo "PR number: $PR_NUMBER"
-          
-          # Get PR details using GitHub CLI
-          PR_HEAD_REF=$(gh pr view $PR_NUMBER --json headRefName --jq '.headRefName')
-          echo "PR head ref from CLI: $PR_HEAD_REF"
-        else
-          PR_HEAD_REF=""
-        fi
-        
         # Commit and push the version bump
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add package.json
         git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
-        
-        # Push to the correct branch
-        if [ "${{ github.event_name }}" = "pull_request" ] && [ -n "$PR_HEAD_REF" ]; then
-          echo "Pushing to PR head branch: $PR_HEAD_REF"
-          git push origin $PR_HEAD_REF
-        else
-          echo "Pushing to direct branch: ${{ github.ref_name }}"
-          git push origin ${{ github.ref_name }}
-        fi
+        git push origin ${{ github.ref_name }}

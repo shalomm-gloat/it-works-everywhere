@@ -1,5 +1,5 @@
 name: 'Version Management'
-description: 'Detect PR labels and calculate new version'
+description: 'Calculate new version for direct pushes to main/staging'
 
 inputs:
   github-token:
@@ -9,7 +9,7 @@ inputs:
 outputs:
   release-type:
     description: 'Type of release (major, minor, patch)'
-    value: ${{ steps.check_pr_label.outputs.release-type }}
+    value: ${{ steps.check_branch.outputs.release-type }}
   new-version:
     description: 'New version after bump'
     value: ${{ steps.new-version.outputs.result }}
@@ -18,7 +18,7 @@ outputs:
     value: ${{ steps.old-version.outputs.result }}
   should-bump:
     description: 'Whether version should be bumped'
-    value: ${{ steps.check_pr_label.outputs.should-bump }}
+    value: ${{ steps.check_branch.outputs.should-bump }}
 
 runs:
   using: 'composite'
@@ -27,38 +27,14 @@ runs:
       shell: bash
       run: yarn add semver
 
-    - name: Check PR labels
-      id: check_pr_label
+    - name: Check branch and determine version bump
+      id: check_branch
       shell: bash
-      env:
-        PR_URL: ${{ github.event.pull_request.html_url }}
-        GH_TOKEN: ${{ inputs.github-token }}
       run: |
-        # Check if this is a pull request event
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          LABELS=$(gh pr view $PR_URL --json labels --jq '.labels[] | select((.name=="version:major") or (.name=="version:minor") or (.name=="version:patch")) | .name')
-          NUMBER_OF_LABELS=$(echo "$LABELS" | wc -w)
-          
-          if [ "$NUMBER_OF_LABELS" -eq "1" ]; then
-            # Extract version type from label (remove "version:" prefix)
-            RELEASE_TYPE=$(echo "$LABELS" | sed 's/version://')
-            echo "Found: $RELEASE_TYPE"
-            echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
-            echo "should-bump=true" >> $GITHUB_OUTPUT
-          elif [ "$NUMBER_OF_LABELS" -gt "1" ]; then
-            echo "::error ::Too many version labels: $(echo $LABELS | tr '\n' ' ')"
-            exit 1
-          else
-            echo "No version labels found, skipping version bump"
-            echo "release-type=patch" >> $GITHUB_OUTPUT
-            echo "should-bump=false" >> $GITHUB_OUTPUT
-          fi
-        else
-          # For direct pushes to main/staging, default to patch bump
-          echo "Direct push to ${{ github.ref }}, defaulting to patch bump"
-          echo "release-type=patch" >> $GITHUB_OUTPUT
-          echo "should-bump=true" >> $GITHUB_OUTPUT
-        fi
+        # For direct pushes to main/staging, default to patch bump
+        echo "Direct push to ${{ github.ref }}, defaulting to patch bump"
+        echo "release-type=patch" >> $GITHUB_OUTPUT
+        echo "should-bump=true" >> $GITHUB_OUTPUT
 
     - name: Get current version
       id: old-version
@@ -71,10 +47,10 @@ runs:
     - name: Calculate new version
       id: new-version
       shell: bash
-      if: steps.check_pr_label.outputs.should-bump == 'true'
+      if: steps.check_branch.outputs.should-bump == 'true'
       env:
         PREV_VERSION: '${{ steps.old-version.outputs.result }}'
-        RELEASE_TYPE: '${{ steps.check_pr_label.outputs.release-type }}'
+        RELEASE_TYPE: '${{ steps.check_branch.outputs.release-type }}'
       run: |
         echo "Previous version: $PREV_VERSION"
         echo "Release type: $RELEASE_TYPE"
@@ -92,6 +68,6 @@ runs:
     - name: Set default new version
       id: new-version-default
       shell: bash
-      if: steps.check_pr_label.outputs.should-bump != 'true'
+      if: steps.check_branch.outputs.should-bump != 'true'
       run: |
         echo "result=${{ steps.old-version.outputs.result }}" >> $GITHUB_OUTPUT
