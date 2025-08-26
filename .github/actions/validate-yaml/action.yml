@@ -29,18 +29,5 @@ runs:
     - name: Validate GitHub Actions structure
       shell: bash
       run: |
-        echo "🔍 Validating GitHub Actions syntax..."
-        
-        # Check for required fields in workflow files
-        for workflow in .github/workflows/*.yml; do
-          echo "Validating workflow structure: $workflow"
-          python3 -c "import yaml, sys; data = yaml.safe_load(open('$workflow')); assert 'on' in data, 'Missing required field: on'; assert 'jobs' in data, 'Missing required field: jobs'; print('✅ Workflow structure is valid')"
-        done
-        
-        # Check for required fields in custom actions
-        for action in .github/actions/*/action.yml; do
-          echo "Validating action structure: $action"
-          python3 -c "import yaml, sys; data = yaml.safe_load(open('$action')); assert 'name' in data, 'Missing required field: name'; assert 'runs' in data, 'Missing required field: runs'; print('✅ Action structure is valid')"
-        done
-        
-        echo "✅ All GitHub Actions validations passed!"
+        chmod +x validate.py
+        python3 validate.py
