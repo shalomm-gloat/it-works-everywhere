@@ -32,7 +32,7 @@ runs:
       shell: bash
       run: |
         # Only bump version on main branch (production releases)
-        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+        if [ "${{ github.ref_name }}" == "main" ]; then
           echo "Production release on main, analyzing commits for version bump"
           
           # Get commits since last tag (or initial commit)

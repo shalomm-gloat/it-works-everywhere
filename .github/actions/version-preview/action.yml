@@ -21,17 +21,54 @@ runs:
         echo "Current version: $CURRENT_VERSION"
         echo "result=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
+    - name: Analyze commits and determine version bump
+      id: commit-analysis
+      shell: bash
+      env:
+        CURRENT_VERSION: '${{ steps.current-version.outputs.result }}'
+      run: |
+        # Get commits in this PR
+        COMMITS=$(git log --oneline --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+        
+        # Analyze commit types
+        MAJOR_COUNT=$(echo "$COMMITS" | grep -c "BREAKING CHANGE\|major" || echo "0")
+        FEAT_COUNT=$(echo "$COMMITS" | grep -c "feat:" || echo "0")
+        FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" || echo "0")
+        
+        echo "Commits analysis:"
+        echo "  Major changes: $MAJOR_COUNT"
+        echo "  Features: $FEAT_COUNT"
+        echo "  Fixes: $FIX_COUNT"
+        
+        # Determine bump type based on conventional commits
+        if [ "$MAJOR_COUNT" -gt 0 ]; then
+          RELEASE_TYPE="major"
+          echo "Major version bump due to breaking changes"
+        elif [ "$FEAT_COUNT" -gt 0 ]; then
+          RELEASE_TYPE="minor"
+          echo "Minor version bump due to new features"
+        elif [ "$FIX_COUNT" -gt 0 ]; then
+          RELEASE_TYPE="patch"
+          echo "Patch version bump due to bug fixes"
+        else
+          RELEASE_TYPE="patch"
+          echo "Default patch bump for changes"
+        fi
+        
+        echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+
     - name: Calculate preview version
       id: preview-version
       shell: bash
       env:
         CURRENT_VERSION: '${{ steps.current-version.outputs.result }}'
+        RELEASE_TYPE: '${{ steps.commit-analysis.outputs.release-type }}'
       run: |
-        # Default to patch bump for preview
         NEW_VERSION=$(node -e "
           const semver = require('semver');
           const current = '$CURRENT_VERSION';
-          console.log(semver.inc(current, 'patch'));
+          const bumpType = '$RELEASE_TYPE';
+          console.log(semver.inc(current, bumpType));
         ")
         echo "Preview version: $NEW_VERSION"
         echo "result=$NEW_VERSION" >> $GITHUB_OUTPUT
@@ -73,7 +110,7 @@ runs:
           **Current Version:** ${{ steps.current-version.outputs.result }}
           **Preview Version:** ${{ steps.preview-version.outputs.result }}
           **Target Branch:** ${targetBranch}
-          **Bump Type:** patch (default for ${targetBranch})
+          **Bump Type:** ${{ steps.commit-analysis.outputs.release-type }} (based on conventional commits)
 
           ### What will happen on merge:
           ${bumpMessage}
