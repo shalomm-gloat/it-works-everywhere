@@ -56,6 +56,7 @@ git checkout staging && git pull origin staging
 
 # 1. Development Environment
 git checkout develop
+git checkout -b "feature/test-1"
 echo "# Dev feature" >> dev-feature.md
 git add dev-feature.md
 git commit -m "feat: add development feature"
