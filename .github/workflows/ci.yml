@@ -32,8 +32,8 @@ jobs:
   versioning:
     runs-on: ubuntu-latest
     name: 'Version Management'
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
-    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/develop' && 'staging' || (github.ref == 'refs/heads/staging' && 'staging' || 'development'))) }}
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
     outputs:
       release-type: ${{ steps.version.outputs.release-type }}
       new-version: ${{ steps.version.outputs.new-version }}
@@ -43,11 +43,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug event info
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Branch: ${{ github.ref_name }}"
+
       - name: Version Management
         id: version
         uses: ./.github/actions/version-management
         with:
           github-token: ${{ github.token }}
+
+      - name: Debug version outputs
+        run: |
+          echo "should-bump: ${{ steps.version.outputs.should-bump }}"
+          echo "new-version: ${{ steps.version.outputs.new-version }}"
+          echo "old-version: ${{ steps.version.outputs.old-version }}"
+          echo "release-type: ${{ steps.version.outputs.release-type }}"
 
   test:
     name: Test & Quality Gates
@@ -109,16 +122,12 @@ jobs:
         fetch-depth: 0  # Full history needed for semantic versioning
 
     # Update version if needed
-    - name: Update package.json version
+    - name: Bump package version
       if: needs.versioning.outputs.should-bump == 'true'
-      run: |
-        NEW_VERSION='${{ needs.versioning.outputs.new-version }}'
-        node -e "
-          const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkg.version = '$NEW_VERSION';
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-        "
+      uses: ./.github/actions/bump-package-version
+      with:
+        new-version: ${{ needs.versioning.outputs.new-version }}
+        github-token: ${{ github.token }}
 
     # Custom action for semantic versioning with environment-specific suffixes
     - name: Generate version tag
