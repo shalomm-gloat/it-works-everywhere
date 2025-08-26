@@ -32,6 +32,7 @@ runs:
       shell: bash
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
+        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         # Check if this is a pull request event
         if [ "${{ github.event_name }}" = "pull_request" ]; then

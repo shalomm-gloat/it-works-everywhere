@@ -34,8 +34,6 @@ jobs:
     name: 'Version Management'
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
     environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/develop' && 'staging' || (github.ref == 'refs/heads/staging' && 'staging' || 'development'))) }}
-    env:
-      GH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }}
     outputs:
       release-type: ${{ steps.version.outputs.release-type }}
       new-version: ${{ steps.version.outputs.new-version }}
@@ -49,7 +47,7 @@ jobs:
         id: version
         uses: ./.github/actions/version-management
         with:
-          github-token: ${{ secrets.GH_AUTH_TOKEN }}
+          github-token: ${{ github.token }}
 
   test:
     name: Test & Quality Gates
