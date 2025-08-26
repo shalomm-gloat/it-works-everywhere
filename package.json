@@ -1,6 +1,6 @@
 {
   "name": "it-works-everywhere",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple Node.js microservice with CI/CD pipeline",
   "main": "server.js",
   "scripts": {
@@ -11,7 +11,11 @@
     "build": "echo 'Build completed'",
     "health": "curl -f http://localhost:3000/health || exit 1"
   },
-  "keywords": ["microservice", "express", "ci-cd"],
+  "keywords": [
+    "microservice",
+    "express",
+    "ci-cd"
+  ],
   "author": "Senior Release Engineer",
   "license": "MIT",
   "dependencies": {
