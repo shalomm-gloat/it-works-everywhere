@@ -142,6 +142,13 @@ jobs:
         new-version: ${{ needs.versioning.outputs.new-version }}
         github-token: ${{ github.token }}
 
+    # Sync version to other branches (only on main)
+    - name: Sync version to other branches
+      if: needs.versioning.outputs.should-bump == 'true' && github.ref == 'refs/heads/main'
+      run: |
+        chmod +x scripts/sync-versions.sh
+        ./scripts/sync-versions.sh
+
     # Use version from versioning job (conventional commits)
     - name: Set version for deployment
       id: version

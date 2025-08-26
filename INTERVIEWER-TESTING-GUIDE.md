@@ -60,7 +60,19 @@ git commit -m "docs: update deployment guide"
 # → No version change
 ```
 
-### **4. Failure Handling**
+### **4. Version Synchronization**
+```bash
+# Check versions across branches
+echo "=== Version Check ==="
+echo "main:" && git show main:package.json | grep '"version"'
+echo "develop:" && git show develop:package.json | grep '"version"'
+echo "staging:" && git show staging:package.json | grep '"version"'
+
+# Sync versions if they're out of sync
+./scripts/sync-versions.sh
+```
+
+### **5. Failure Handling**
 ```bash
 echo "expect(true).toBe(false);" >> __tests__/server.test.js
 git add __tests__/server.test.js && git commit -m "test: break test"
@@ -68,7 +80,7 @@ git push origin develop
 ```
 **Watch**: Pipeline fails, failure notification sent
 
-### **5. Email Notifications**
+### **6. Email Notifications**
 ```bash
 echo "# Success test" >> SUCCESS.md
 git add SUCCESS.md && git commit -m "feat: test success notification"
