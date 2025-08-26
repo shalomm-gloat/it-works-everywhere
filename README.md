@@ -108,6 +108,12 @@ FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" || echo "0")
 - **Solution**: Use PR templates and documentation to guide proper branch usage
 - **Impact**: Cannot enforce branch policies automatically
 
+### **⏰ Time Constraints**
+- **Constraint**: Limited time to implement version synchronization across branches
+- **Solution**: Focus on production versioning (main branch only) with conventional commits
+- **Impact**: Development and staging branches maintain same version until production release
+- **Note**: Version sync script exists but logic needs refinement for proper branch coordination
+
 ## 📊 Monitoring & Security
 
 ### **Health Checks**
