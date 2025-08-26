@@ -101,13 +101,9 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 
 ## 🤔 Key Decisions & Reasoning
 
-### **Conventional Commits Over PR Labels**
-- **Why**: Industry standard, automatic analysis, better audit trail
-- **Result**: No manual intervention, clear Git history
-
 ### **Progressive Deployment Strategy**
 - **Why**: Risk mitigation, quality gates, environment isolation
-- **Result**: Netflix/Google/Amazon-style deployment flow
+- **Result**: Good deployment flow
 
 ### **Custom Actions Architecture**
 - **Why**: Maintainability, reusability, testability
@@ -240,15 +236,9 @@ FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" || echo "0")
 
 ## 🏆 Success Metrics
 
-### **Reliability**
-- **99.9% Uptime**: Robust health checks
-- **Zero-Downtime**: Rolling update strategy
-- **Fast Rollbacks**: < 5 minutes emergency rollback
-
 ### **Developer Productivity**
 - **Deployment Time**: < 10 minutes push to production
 - **Feedback Loop**: Immediate notifications
-- **Error Resolution**: Clear debugging info
 
 ### **Security**
 - **Vulnerability Detection**: Automated scanning
@@ -291,7 +281,6 @@ Production (main) → Version Bump → Release Tag → Monitoring
 | **Progressive Deployment** | dev → staging → production |
 | **Zero-Click Deployment** | Push to branch = deploy |
 | **Rollback** | Revert to previous version |
-| **Blue-Green** | Zero-downtime deployments |
 
 ### **Versioning Terms**
 | Term | Definition |
