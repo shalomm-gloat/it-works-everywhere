@@ -20,6 +20,8 @@ git checkout -b hotfix/critical-fix
 git checkout main && git merge hotfix/critical-fix && git push origin main
 ```
 
+**💡 For comprehensive testing instructions, see [`INTERVIEWER-TESTING-GUIDE.md`](./INTERVIEWER-TESTING-GUIDE.md)**
+
 ## 🏗️ What Was Built
 
 ### **Core Features**
@@ -73,7 +75,7 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 │ DEVELOPMENT │───▶│   STAGING   │───▶│ PRODUCTION  │
 │             │    │             │    │             │
 │ • develop   │    │ • staging   │    │ • main      │
-│ • v1.1.0-dev│    │ • v1.1.0-stg│    │ • v1.1.0    │
+│ • v1.1.3-dev│    │ • v1.1.3-stg│    │ • v1.1.3    │
 │ • Simulated │    │ • Simulated │    │ • Simulated │
 │   Deploy    │    │   Deploy    │    │   Deploy    │
 └─────────────┘    └─────────────┘    └─────────────┘
@@ -86,8 +88,8 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 │ CONVENTIONAL│    │   BRANCH    │    │   RESULT    │
 │   COMMITS   │    │   MERGE     │    │             │
 │             │    │             │    │             │
-│ • feat:     │    │ • develop→  │    │ • 1.0.10→   │
-│   → minor   │    │   staging   │    │   1.1.0     │
+│ • feat:     │    │ • develop→  │    │ • 1.1.2→   │
+│   → minor   │    │   staging   │    │   1.1.3     │
 │ • fix:      │    │ • staging→  │    │ • GitHub    │
 │   → patch   │    │   main      │    │   tag       │
 │ • BREAKING  │    │ • Only main │    │ • Docker    │
@@ -130,10 +132,13 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 ├── version-management/     # Commit analysis & version bump
 ├── version-preview/        # PR version preview
 ├── bump-package-version/   # Package.json updates + GitHub tags
-├── deploy/                 # AWS ECS + simulated deployments
+├── deploy/                 # Platform-agnostic deployments
 ├── notify-success/         # Success notifications
 ├── notify-failure/         # Failure notifications
-└── get-environment/        # Environment mapping
+├── get-environment/        # Environment mapping
+├── validate-version/       # Version validation
+├── rollback-deploy/        # Rollback deployment
+└── create-rollback-issue/  # Rollback issue creation
 ```
 
 ### **Versioning Logic**
@@ -259,8 +264,6 @@ Production (main) → Version Bump → Release Tag → Monitoring
 - **Staging**: Production-like, UAT, integration testing
 - **Production**: Stable releases, monitoring, rollback capability
 
-### **Industry Standards**
-Follows patterns used by **Netflix**, **Google**, **Amazon**, **Microsoft**
 
 ## 📋 Terminology
 
@@ -294,6 +297,15 @@ Follows patterns used by **Netflix**, **Google**, **Amazon**, **Microsoft**
 | **Multi-stage Build** | Optimized Docker build process |
 | **Vulnerability Scanning** | Automated security checks |
 | **Secrets Management** | Secure credential handling |
+
+### **Git & Version Control**
+| Term | Definition |
+|------|------------|
+| **Push** | Upload local commits to remote repository |
+| **Pull** | Download and merge changes from remote repository |
+| **Branch** | Independent line of development |
+| **Merge** | Combine changes from different branches |
+| **Rebase** | Replay commits on top of another branch |
 
 ---
 
