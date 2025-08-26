@@ -20,6 +20,10 @@ inputs:
   github-token:
     description: 'GitHub token for API access'
     required: true
+  email-to:
+    description: 'Email recipient(s)'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
@@ -67,7 +71,9 @@ runs:
             }
           }
 
-    - name: Send failure email notification
+    # Only send email if recipient is specified
+    - name: Send email notification
+      if: inputs.email-to != ''
       uses: dawidd6/action-send-mail@v6
       with:
         server_address: smtp.gmail.com
@@ -76,25 +82,22 @@ runs:
         username: ${{ inputs.brevo-smtp-user }}
         password: ${{ inputs.brevo-smtp-key }}
         subject: "❌ ${{ inputs.environment }} Deployment Failed - ${{ github.repository }}"
-        to: ${{ github.event.pusher.email }}
         from: "<shalommeoded@gmail.com>"
+        to: ${{ inputs.email-to }}
         body: |
           Hello ${{ github.actor }},
           
-          Your deployment to ${{ inputs.environment }} environment has failed.
+          Your deployment to ${{ inputs.environment }} environment has failed!
           
           **Details:**
           - Repository: ${{ github.repository }}
-          - Branch: ${{ github.ref_name || 'N/A' }}
-          - Version: ${{ inputs.version || 'N/A' }}
+          - Branch: ${{ github.ref_name }}
+          - Version: ${{ inputs.version }}
           - Commit: ${{ github.sha }}
           - Environment: ${{ inputs.environment }}
-          - Workflow: ${{ github.workflow }}
-          - Run ID: ${{ github.run_id }}
+          - Error: ${{ inputs.error }}
           
-          **Logs**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          
-          🚨 Please check the logs and fix the issues before re-running the deployment.
+          🔧 Please check the [workflow logs](${{ github.serverUrl }}/${{ github.repository }}/actions/runs/${{ github.runId }}) for details.
           
           Best regards,
           CI/CD Pipeline

@@ -23,6 +23,10 @@ inputs:
   github-token:
     description: 'GitHub token for API access'
     required: true
+  email-to:
+    description: 'Email recipient(s)'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
@@ -70,7 +74,9 @@ runs:
             }
           }
 
-    - name: Send success email notification
+    # Only send email if recipient is specified
+    - name: Send email notification
+      if: inputs.email-to != ''
       uses: dawidd6/action-send-mail@v6
       with:
         server_address: smtp.gmail.com
@@ -79,8 +85,8 @@ runs:
         username: ${{ inputs.brevo-smtp-user }}
         password: ${{ inputs.brevo-smtp-key }}
         subject: "✅ ${{ inputs.environment }} Deployment Successful - ${{ github.repository }}"
-        to: ${{ github.event.pusher.email }}
         from: "<shalommeoded@gmail.com>"
+        to: ${{ inputs.email-to }}
         body: |
           Hello ${{ github.actor }},
           
@@ -92,11 +98,7 @@ runs:
           - Version: ${{ inputs.version }}
           - Commit: ${{ github.sha }}
           - Environment: ${{ inputs.environment }}
-          - URL: ${{ 
-            inputs.environment == 'production' && 'https://myprod.getthemilkshake.com' || 
-            inputs.environment == 'staging' && 'https://mystaging.getthemilkshake.com' || 
-            'https://mydev.getthemilkshake.com' 
-          }}
+          - URL: https://my${{ inputs.environment }}.getthemilkshake.com
           
           🎉 All quality gates passed and deployment completed successfully!
           
