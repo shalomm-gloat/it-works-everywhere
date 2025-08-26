@@ -27,8 +27,35 @@ runs:
       env:
         CURRENT_VERSION: '${{ steps.current-version.outputs.result }}'
       run: |
-        # Get commits in this PR
-        COMMITS=$(git log --oneline --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+        # Get commits in this PR using a more robust approach
+        # First try to get the base and head refs
+        BASE_REF="${{ github.event.pull_request.base.ref }}"
+        HEAD_REF="${{ github.event.pull_request.head.ref }}"
+        
+        echo "Base ref: $BASE_REF"
+        echo "Head ref: $HEAD_REF"
+        
+        # Try different approaches to get commits
+        if [ -n "$BASE_REF" ] && [ -n "$HEAD_REF" ]; then
+          # Try using refs
+          COMMITS=$(git log --oneline --no-merges origin/$BASE_REF..origin/$HEAD_REF 2>/dev/null || echo "")
+          
+          if [ -z "$COMMITS" ]; then
+            # Fallback: try using the PR event data
+            COMMITS=$(git log --oneline --no-merges ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} 2>/dev/null || echo "")
+          fi
+          
+          if [ -z "$COMMITS" ]; then
+            # Final fallback: get all commits in current branch
+            COMMITS=$(git log --oneline --no-merges -10)
+          fi
+        else
+          # Fallback: get recent commits
+          COMMITS=$(git log --oneline --no-merges -10)
+        fi
+        
+        echo "Commits to analyze:"
+        echo "$COMMITS"
         
         # Analyze commit types
         MAJOR_COUNT=$(echo "$COMMITS" | grep -c "BREAKING CHANGE\|major" 2>/dev/null || echo "0")
