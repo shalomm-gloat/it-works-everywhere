@@ -81,9 +81,13 @@ jobs:
     - name: Bump version
       id: bump-version
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || (github.event_name == 'pull_request' && (contains(github.event.pull_request.labels.*.name, 'version:major') || contains(github.event.pull_request.labels.*.name, 'version:minor') || contains(github.event.pull_request.labels.*.name, 'version:patch')))
-      uses: ./.github/actions/bump-version
+      uses: phips28/gh-action-bump-version@master
       with:
-        github-token: ${{ github.token }}
+        tag-prefix: 'v'
+        commit-message: 'chore: bump version to {{version}} [skip ci]'
+        default: patch
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
     # Custom action for semantic versioning with environment-specific suffixes
     - name: Generate version tag
