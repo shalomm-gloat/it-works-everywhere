@@ -121,26 +121,13 @@ jobs:
       with:
         fetch-depth: 0  # Full history needed for semantic versioning
 
-    - name: Update package.json version
+    # Update version if needed
+    - name: Bump package version
       if: needs.versioning.outputs.should-bump == 'true'
-      run: |
-        NEW_VERSION='${{ needs.versioning.outputs.new-version }}'
-        echo "Updating package.json to version: $NEW_VERSION"
-        node -e "
-          const fs = require('fs');
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkg.version = '$NEW_VERSION';
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-        "
-        echo "Updated package.json:"
-        cat package.json | grep '"version"'
-        
-        # Commit and push the version bump
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git add package.json
-        git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
-        git push origin ${{ github.ref }}
+      uses: ./.github/actions/bump-package-version
+      with:
+        new-version: ${{ needs.versioning.outputs.new-version }}
+        github-token: ${{ github.token }}
 
     # Custom action for semantic versioning with environment-specific suffixes
     - name: Generate version tag
