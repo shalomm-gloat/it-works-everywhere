@@ -1,5 +1,5 @@
 name: 'Version Management'
-description: 'Calculate new version for direct pushes to main/staging'
+description: 'Calculate new version based on conventional commits'
 
 inputs:
   github-token:
@@ -9,7 +9,7 @@ inputs:
 outputs:
   release-type:
     description: 'Type of release (major, minor, patch)'
-    value: ${{ steps.check_branch.outputs.release-type }}
+    value: ${{ steps.check_commits.outputs.release-type }}
   new-version:
     description: 'New version after bump'
     value: ${{ steps.new-version.outputs.result }}
@@ -18,7 +18,7 @@ outputs:
     value: ${{ steps.old-version.outputs.result }}
   should-bump:
     description: 'Whether version should be bumped'
-    value: ${{ steps.check_branch.outputs.should-bump }}
+    value: ${{ steps.check_commits.outputs.should-bump }}
 
 runs:
   using: 'composite'
@@ -27,14 +27,49 @@ runs:
       shell: bash
       run: yarn add semver
 
-    - name: Check branch and determine version bump
-      id: check_branch
+    - name: Analyze commits and determine version bump
+      id: check_commits
       shell: bash
       run: |
-        # For direct pushes to main/staging, default to patch bump
-        echo "Direct push to ${{ github.ref }}, defaulting to patch bump"
-        echo "release-type=patch" >> $GITHUB_OUTPUT
-        echo "should-bump=true" >> $GITHUB_OUTPUT
+        # Only bump version on main branch (production releases)
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "Production release on main, analyzing commits for version bump"
+          
+          # Get commits since last tag (or initial commit)
+          COMMITS=$(git log --oneline --no-merges $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD)
+          
+          # Analyze commit types
+          MAJOR_COUNT=$(echo "$COMMITS" | grep -c "BREAKING CHANGE\|major" || echo "0")
+          FEAT_COUNT=$(echo "$COMMITS" | grep -c "feat:" || echo "0")
+          FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" || echo "0")
+          
+          echo "Commits analysis:"
+          echo "  Major changes: $MAJOR_COUNT"
+          echo "  Features: $FEAT_COUNT"
+          echo "  Fixes: $FIX_COUNT"
+          
+          # Determine bump type based on conventional commits
+          if [ "$MAJOR_COUNT" -gt 0 ]; then
+            RELEASE_TYPE="major"
+            echo "Major version bump due to breaking changes"
+          elif [ "$FEAT_COUNT" -gt 0 ]; then
+            RELEASE_TYPE="minor"
+            echo "Minor version bump due to new features"
+          elif [ "$FIX_COUNT" -gt 0 ]; then
+            RELEASE_TYPE="patch"
+            echo "Patch version bump due to bug fixes"
+          else
+            RELEASE_TYPE="patch"
+            echo "Default patch bump for production release"
+          fi
+          
+          echo "release-type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "should-bump=true" >> $GITHUB_OUTPUT
+        else
+          echo "Branch merge or non-production push, no version bump"
+          echo "release-type=patch" >> $GITHUB_OUTPUT
+          echo "should-bump=false" >> $GITHUB_OUTPUT
+        fi
 
     - name: Get current version
       id: old-version
@@ -47,10 +82,10 @@ runs:
     - name: Calculate new version
       id: new-version
       shell: bash
-      if: steps.check_branch.outputs.should-bump == 'true'
+      if: steps.check_commits.outputs.should-bump == 'true'
       env:
         PREV_VERSION: '${{ steps.old-version.outputs.result }}'
-        RELEASE_TYPE: '${{ steps.check_branch.outputs.release-type }}'
+        RELEASE_TYPE: '${{ steps.check_commits.outputs.release-type }}'
       run: |
         echo "Previous version: $PREV_VERSION"
         echo "Release type: $RELEASE_TYPE"
@@ -68,6 +103,6 @@ runs:
     - name: Set default new version
       id: new-version-default
       shell: bash
-      if: steps.check_branch.outputs.should-bump != 'true'
+      if: steps.check_commits.outputs.should-bump != 'true'
       run: |
         echo "result=${{ steps.old-version.outputs.result }}" >> $GITHUB_OUTPUT

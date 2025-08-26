@@ -32,8 +32,8 @@ jobs:
   versioning:
     runs-on: ubuntu-latest
     name: 'Version Management'
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/staging' && 'staging' || 'development') }}
     outputs:
       release-type: ${{ steps.version.outputs.release-type }}
       new-version: ${{ steps.version.outputs.new-version }}
@@ -61,6 +61,19 @@ jobs:
           echo "new-version: ${{ steps.version.outputs.new-version }}"
           echo "old-version: ${{ steps.version.outputs.old-version }}"
           echo "release-type: ${{ steps.version.outputs.release-type }}"
+
+  version-preview:
+    runs-on: ubuntu-latest
+    name: 'Version Preview'
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Version Preview
+        uses: ./.github/actions/version-preview
+        with:
+          github-token: ${{ github.token }}
 
   test:
     name: Test & Quality Gates

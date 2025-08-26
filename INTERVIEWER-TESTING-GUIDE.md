@@ -1,6 +1,6 @@
-# 🧪 Simple CI/CD Testing Guide
+# 🧪 CI/CD Testing Guide
 
-A quick guide to test the main features of the CI/CD pipeline.
+A comprehensive guide to test the production-ready CI/CD pipeline with progressive deployment and conventional commits.
 
 ## 🚀 Quick Setup
 
@@ -12,204 +12,149 @@ A quick guide to test the main features of the CI/CD pipeline.
    BREVO_SMTP_USER=your-brevo-smtp-user
    BREVO_SMTP_KEY=your-brevo-smtp-key
    ```
-3. **Create PR labels** for version bumping:
-   - Go to **Issues** → **Labels**
-   - Create: `version:major` (red), `version:minor` (blue), `version:patch` (green)
 
-## 🎯 Test the Main Features
+## 🎯 Test Scenarios
 
-### **1. Development Deployment**
+### **1. Version Preview on PRs**
 ```bash
-# Make a small change and push to develop
-echo "# Test" >> README.md
-git add README.md
-git commit -m "feat: test deployment"
-git push origin develop
-```
-**Watch**: GitHub Actions → CI/CD Pipeline should deploy with `v1.0.0-dev` tag
-
-### **2. Staging Deployment**
-```bash
-# Push to staging branch
-git checkout staging
-git merge develop
-git push origin staging
-```
-**Watch**: Should deploy with `v1.0.0-stg` tag
-
-### **3. Production Deployment**
-```bash
-# Create PR from develop to staging, then staging to main
-# Or push directly to main for testing
-git checkout main
-git merge develop
-git push origin main
-```
-**Watch**: Should deploy with clean `v1.0.0` tag (no suffix)
-
-### **4. Version Bumping with PR Labels**
-```bash
-# Create a feature branch
-git checkout -b feature/new-feature
-echo "# New feature" >> FEATURE.md
-git add FEATURE.md
-git commit -m "feat: add new feature"
-git push origin feature/new-feature
-
+git checkout -b feature/test-preview
+echo "# Test feature" >> TEST.md
+git add TEST.md && git commit -m "feat: add test feature"
+git push origin feature/test-preview
 # Create PR to develop
-# Add label: version:minor
-# Merge the PR
 ```
-**Watch**: Version should automatically bump from `1.0.0` to `1.1.0` based on PR label
+**Watch**: Version Preview job creates PR comment with version info
 
-### **5. Test Different Version Bump Types**
+### **2. Progressive Deployment Flow**
 ```bash
-# Test Major Version Bump
-git checkout -b feature/breaking-change
-echo "# Breaking change" >> BREAKING.md
-git add BREAKING.md
-git commit -m "feat: BREAKING CHANGE: remove deprecated API"
-git push origin feature/breaking-change
+# Development
+git checkout develop && git merge feature/test-preview && git push origin develop
 
-# Create PR to develop
-# Add label: version:major
-# Merge the PR
+# Staging  
+git checkout staging && git merge develop && git push origin staging
+
+# Production
+git checkout main && git merge staging && git push origin main
 ```
-**Watch**: Version should bump from `1.1.0` to `2.0.0`
+**Watch**: 
+- **Dev/Staging**: No version bump, same version flows through
+- **Production**: Version bump based on conventional commits
 
+### **3. Conventional Commit Versioning**
 ```bash
-# Test Patch Version Bump
-git checkout -b feature/bug-fix
-echo "# Bug fix" >> FIX.md
-git add FIX.md
-git commit -m "fix: resolve authentication issue"
-git push origin feature/bug-fix
+# Minor bump (feat:)
+git commit -m "feat: add user authentication system"
+# → 1.0.0 → 1.1.0
 
-# Create PR to develop
-# Add label: version:patch
-# Merge the PR
+# Patch bump (fix:)
+git commit -m "fix: resolve login timeout issue"  
+# → 1.1.0 → 1.1.1
+
+# Major bump (BREAKING CHANGE)
+git commit -m "feat: BREAKING CHANGE: redesign API endpoints"
+# → 1.1.1 → 2.0.0
+
+# No bump (docs:, chore:)
+git commit -m "docs: update deployment guide"
+# → No version change
 ```
-**Watch**: Version should bump from `2.0.0` to `2.0.1`
 
-### **6. Test No Label (Default Patch)**
+### **4. Failure Handling**
 ```bash
-# Create PR without version label
-git checkout -b feature/no-label
-echo "# No version label" >> NO_LABEL.md
-git add NO_LABEL.md
-git commit -m "docs: update documentation"
-git push origin feature/no-label
-
-# Create PR to develop
-# Don't add any version label
-# Merge the PR
-```
-**Watch**: Version should default to patch bump (2.0.1 → 2.0.2)
-
-### **7. Test Manual Version Bump**
-```bash
-# Test manual bump in workflow
-# Go to Actions → CI/CD Pipeline → Run workflow
-# Add environment variable: bump-type=minor
-# Run workflow
-```
-**Watch**: Should manually bump version regardless of PR labels
-
-### **8. Emergency Rollback**
-1. Go to **Actions** → **Emergency Rollback**
-2. Click **"Run workflow"**
-3. Enter: Version `v1.0.0`, Environment `production`, Reason `"Testing"`
-4. Click **"Run workflow"**
-
-**Watch**: Should rollback to `v1.0.0-rollback` and create a GitHub issue
-
-### **9. Manual Deployment**
-1. Go to **Actions** → **CI/CD Pipeline**
-2. Click **"Run workflow"**
-3. Select environment: `staging`
-4. Click **"Run workflow"**
-
-**Watch**: Should deploy to staging environment
-
-### **10. Test Failure**
-```bash
-# Break a test to see failure handling
 echo "expect(true).toBe(false);" >> __tests__/server.test.js
-git add __tests__/server.test.js
-git commit -m "test: break test"
+git add __tests__/server.test.js && git commit -m "test: break test"
 git push origin develop
 ```
-**Watch**: Pipeline should fail and send failure notification
+**Watch**: Pipeline fails, failure notification sent
 
-## 📊 What You Should See
+### **5. Email Notifications**
+```bash
+echo "# Success test" >> SUCCESS.md
+git add SUCCESS.md && git commit -m "feat: test success notification"
+git push origin develop
+```
+**Watch**: Success notification sent to your email
 
-### **Version Tags**
+## 📊 Expected Results
+
+### **Version Preview Comments**
+```
+## 📋 Version Preview
+**Current Version:** 1.0.0
+**Preview Version:** 1.0.1
+**Target Branch:** develop
+**Bump Type:** patch (default for develop)
+```
+
+### **Conventional Commit Rules**
+- **`feat:`** → Minor version bump (1.0.0 → 1.1.0)
+- **`fix:`** → Patch version bump (1.1.0 → 1.1.1)
+- **`BREAKING CHANGE:`** → Major version bump (1.1.1 → 2.0.0)
+- **`docs:, chore:`** → No version bump
+
+### **Environment Flow**
+```
+Feature Branch → PR Preview → 1.0.0
+     ↓
+Development → 1.0.0 (no bump)
+     ↓
+Staging → 1.0.0 (no bump)
+     ↓
+Production → 1.0.1 (bump based on commits)
+```
+
+### **Docker Images & Tags**
 - **Development**: `v1.0.0-dev`
-- **Staging**: `v1.0.0-stg` 
-- **Production**: `v1.0.0`
-- **Rollback**: `v1.0.0-rollback`
+- **Staging**: `v1.0.0-stg`
+- **Production**: `v1.0.1-prod`
 
-### **Version Bumping with PR Labels**
-- **`version:major`** → Major version bump (1.0.0 → 2.0.0)
-- **`version:minor`** → Minor version bump (1.0.0 → 1.1.0)
-- **`version:patch`** → Patch version bump (1.0.0 → 1.0.1)
-- **No label** → Default to patch bump
+### **GitHub Tags**
+- **Automatic creation**: `v1.0.1`, `v1.1.0`, `v2.0.0`
+- **Annotated tags**: With release messages
 
-### **Version Flow Through Environments**
-```
-Feature Branch → PR with version:minor → 1.0.0 → 1.1.0
-     ↓
-Development → 1.1.0-dev
-     ↓
-Staging → 1.1.0-stg
-     ↓
-Production → 1.1.0
-```
+## 🎯 Key Features to Verify
 
-### **Docker Images**
-- **Registry**: `docker.io`
-- **Image**: `your-username/it-works-on-my-machine`
-- **Tags**: Version-specific tags above
-
-### **Environment URLs**
-- **Development**: `https://mydev.getthemilkshake.com`
-- **Staging**: `https://mystaging.getthemilkshake.com`
-- **Production**: `https://myprod.getthemilkshake.com`
-
-## 🎯 Key Features to Notice
-
-1. **Zero-click deployments** - Just push to branch
-2. **PR label versioning** - Explicit version bump control
-3. **Quality gates** - Tests, linting, security scanning
-4. **Rollback capability** - Emergency rollback workflow
-5. **Notifications** - Email alerts for success/failure
-6. **Health checks** - Application health monitoring
-7. **Automatic version bumping** - Based on PR labels
-8. **Environment-specific versions** - Different suffixes per environment
+1. **Version Preview**: Shows on PRs before merge
+2. **Conventional Commits**: Automatic version bumping
+3. **Progressive Deployment**: Code flows through environments
+4. **Same Version Strategy**: No bumps on develop/staging
+5. **GitHub Tags**: Automatic tag creation
+6. **Email Notifications**: Success/failure alerts
+7. **PR Comments**: Version preview and deployment notifications
+8. **Quality Gates**: Tests, linting, security
 
 ## 🔍 Version Bumping Verification
 
 ### **Check Version Bumps**
-1. **Monitor package.json changes** in PR commits
+1. **Monitor package.json changes** in commits
 2. **Look for [skip ci] commits** - version bump commits
-3. **Check Docker image tags** for new versions
-4. **Verify environment suffixes** (dev, stg, none for prod)
+3. **Check GitHub tags** for new releases
+4. **Verify Docker image tags** for new versions
+5. **Check commit message analysis** in versioning job logs
 
-### **Expected Version Bump Behavior**
-- **PR with version:major** → Major version increment
-- **PR with version:minor** → Minor version increment  
-- **PR with version:patch** → Patch version increment
-- **PR with no label** → Default to patch increment
-- **Manual workflow** → Respects manual bump type
+### **Expected Behavior**
+- **Develop/Staging**: No version bump (maintains same version)
+- **Main**: Version bump based on conventional commits
+- **GitHub Tags**: Created automatically for each release
+- **Docker Tags**: Environment-specific suffixes
 
 ## 🚨 If Something Fails
 
-1. Check **GitHub Actions logs** for error details
-2. Verify **secrets are configured** correctly
-3. Test **Docker build locally**: `docker build -t test .`
-4. **Check PR labels** are correctly applied
-5. **Verify label format** (version:major, version:minor, version:patch)
+1. **Check GitHub Actions logs** for detailed error information
+2. **Verify secrets are configured** correctly
+3. **Test Docker build locally**: `docker build -t test .`
+4. **Check commit messages** follow conventional commit format
+5. **Verify branch permissions** and workflow triggers
+
+## 📈 Success Metrics
+
+- **Version Preview**: Shows correctly on PRs
+- **Progressive Deployment**: Code flows through environments
+- **Conventional Commits**: Version bumps based on commit types
+- **GitHub Tags**: Automatic tag creation
+- **Email Notifications**: Success/failure alerts sent
+- **Quality Gates**: Tests pass, security scan clean
 
 ---
 
-**That's it! This demonstrates a production-ready CI/CD pipeline with all the essential features including PR label-based version bumping.**
+**This demonstrates a production-ready CI/CD pipeline with industry best practices including conventional commits, progressive deployment, and automated versioning!**
