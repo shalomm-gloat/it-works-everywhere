@@ -1,5 +1,12 @@
 name: CI/CD Pipeline (Refactored with Official Actions)
 
+# Explicit permissions for GitHub API access
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
 on:
   push:
     branches: [main, develop, staging]
@@ -86,7 +93,7 @@ jobs:
         error: 'Test job failed - check workflow logs for details'
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
-        github-token: ${{ secrets.GH_AUTH_TOKEN }}
+        github-token: ${{ github.token }}
 
   build:
     name: Build & Deploy
@@ -175,7 +182,7 @@ jobs:
         version: ${{ steps.version.outputs.version }}
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
-        github-token: ${{ secrets.GH_AUTH_TOKEN }}
+        github-token: ${{ github.token }}
 
     # Use custom notify-failure action (already uses official actions internally)
     - name: Notify failure
@@ -187,4 +194,4 @@ jobs:
         error: 'Deployment failed - check workflow logs for details'
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
-        github-token: ${{ secrets.GH_AUTH_TOKEN }}
+        github-token: ${{ github.token }}
