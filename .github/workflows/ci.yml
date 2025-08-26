@@ -32,8 +32,8 @@ jobs:
   versioning:
     runs-on: ubuntu-latest
     name: 'Version Management'
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/staging' && 'staging' || 'development') }}
     outputs:
       release-type: ${{ steps.version.outputs.release-type }}
       new-version: ${{ steps.version.outputs.new-version }}
