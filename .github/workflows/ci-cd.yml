@@ -66,6 +66,7 @@ jobs:
           echo "old-version: ${{ steps.version.outputs.old-version }}"
           echo "release-type: ${{ steps.version.outputs.release-type }}"
 
+  # Create a version preview for the PR that will be used to test the versioning logic
   version-preview:
     runs-on: ubuntu-latest
     name: 'Version Preview'
@@ -89,6 +90,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # Use official actions instead of custom test-quality action for better maintainability
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -98,6 +100,7 @@ jobs:
     - name: Install dependencies
       run: yarn install --frozen-lockfile
 
+    # Quality gates: linting, testing, security audit, health check
     - name: Run linting
       run: yarn lint
 
@@ -112,7 +115,7 @@ jobs:
         chmod +x test.sh
         ./test.sh  # Assignment constraint: only functional testing available via existing test.sh
 
-    # Use custom notify-failure action (already uses official actions internally)
+    # Notify on test failures (sends email + GitHub notification)
     - name: Notify failure
       if: failure()
       uses: ./.github/actions/notify-failure
