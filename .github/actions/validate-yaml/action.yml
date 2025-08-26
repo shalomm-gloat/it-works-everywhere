@@ -29,5 +29,5 @@ runs:
     - name: Validate GitHub Actions structure
       shell: bash
       run: |
-        chmod +x validate.py
-        python3 validate.py
+        chmod +x .github/actions/validate-yaml/validate.py
+        python3 .github/actions/validate-yaml/validate.py
