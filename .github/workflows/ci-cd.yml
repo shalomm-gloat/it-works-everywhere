@@ -9,9 +9,9 @@ permissions:
 
 on:
   push:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, 'hotfix/*']
   pull_request:
-    branches: [main, develop, staging]
+    branches: [main, develop, staging, 'hotfix/*']
   workflow_dispatch:
     inputs:
       environment:
@@ -32,8 +32,8 @@ jobs:
   versioning:
     runs-on: ubuntu-latest
     name: 'Version Management'
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/staging' && 'staging' || 'development') }}
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/hotfix/')
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/staging' && 'staging' || (startsWith(github.ref, 'refs/heads/hotfix/') && 'production' || 'development')) }}
     outputs:
       release-type: ${{ steps.version.outputs.release-type }}
       new-version: ${{ steps.version.outputs.new-version }}
@@ -128,7 +128,7 @@ jobs:
     needs: [test, versioning]
     # CRITICAL: This environment field is required for GitHub Actions to access secrets and determine deployment target
     # Without this, Docker login fails because secrets are not accessible
-    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/develop' && 'staging' || (github.ref == 'refs/heads/staging' && 'staging' || 'development'))) }}
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/develop' && 'staging' || (github.ref == 'refs/heads/staging' && 'staging' || (startsWith(github.ref, 'refs/heads/hotfix/') && 'production' || 'development')))) }}
     
     steps:
     - name: Checkout code

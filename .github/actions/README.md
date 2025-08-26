@@ -4,10 +4,10 @@ This directory contains reusable GitHub Actions that break down the CI/CD pipeli
 
 ## Core Actions
 
-### `generate-version/`
-- **Purpose**: Generate semantic version tags based on branch
-- **Outputs**: version, base_version, version_suffix, env_suffix
-- **Usage**: Used in CI workflow for versioning
+### `version-management/`
+- **Purpose**: Analyze conventional commits and determine version bump
+- **Outputs**: release-type, new-version, old-version, should-bump
+- **Usage**: Used in CI/CD workflow for versioning
 
 ### `get-environment/`
 - **Purpose**: Determine target environment based on branch
@@ -46,11 +46,7 @@ This directory contains reusable GitHub Actions that break down the CI/CD pipeli
 - **Purpose**: Create GitHub issue for rollback tracking
 - **Usage**: Used in rollback workflow
 
-## Release Actions
 
-### `generate-release/`
-- **Purpose**: Generate release notes and create GitHub releases
-- **Usage**: Used in release workflow
 
 ## Benefits
 

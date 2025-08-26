@@ -28,6 +28,8 @@ runs:
           ENV="staging"
         elif [ "${{ github.ref }}" = "refs/heads/develop" ]; then
           ENV="development"
+        elif [[ "${{ github.ref }}" =~ refs/heads/hotfix/.* ]]; then
+          ENV="production"
         else
           ENV="development"
         fi

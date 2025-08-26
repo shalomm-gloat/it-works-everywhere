@@ -30,11 +30,12 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 - **Zero-Click Deployments**: Push to branch = deploy to environment
 
 ### **Pipeline Components**
-- **GitHub Actions Workflow**: Main CI/CD pipeline
+- **GitHub Actions Workflow**: Main CI/CD pipeline (`ci-cd.yml`)
 - **Docker Containerization**: Multi-stage builds with security
 - **Email Notifications**: Success/failure alerts
 - **Health Monitoring**: Using existing `/health` endpoint
-- **Rollback Capability**: Emergency rollback workflow
+- **Rollback Capability**: Emergency rollback workflow (`rollback.yml`)
+- **Testing Guide**: Comprehensive testing instructions (`INTERVIEWER-TESTING-GUIDE.md`)
 
 ## 🤔 Key Decisions & Reasoning
 
@@ -58,7 +59,7 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 
 ### **Workflow Structure**
 ```yaml
-# .github/workflows/ci.yml
+# .github/workflows/ci-cd.yml
 - versioning: Conventional commit analysis
 - build: Test, lint, security scan
 - deploy: Platform-agnostic deployment
@@ -102,6 +103,11 @@ FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" || echo "0")
 - **Constraint**: Limited to existing `/health` endpoint
 - **Solution**: Maximize use of available endpoint via test.sh
 
+### **🔒 GitHub Free Tier Limitations**
+- **Constraint**: No branch protection rules available in free tier
+- **Solution**: Use PR templates and documentation to guide proper branch usage
+- **Impact**: Cannot enforce branch policies automatically
+
 ## 📊 Monitoring & Security
 
 ### **Health Checks**
@@ -117,10 +123,11 @@ FIX_COUNT=$(echo "$COMMITS" | grep -c "fix:" || echo "0")
 ## 🔄 Rollback & Scalability
 
 ### **Emergency Rollback**
-- **Manual Trigger**: Use rollback workflow
+- **Manual Trigger**: Use `rollback.yml` workflow via GitHub UI
 - **Version Selection**: Choose previous stable version
 - **Automatic Deployment**: Deploy with rollback tag
 - **Notification**: Alert team of rollback event
+- **Documentation**: See `INTERVIEWER-TESTING-GUIDE.md` for testing instructions
 
 ### **Scalability**
 - **Horizontal**: Stateless design, load balancer ready
