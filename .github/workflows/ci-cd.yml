@@ -165,6 +165,22 @@ jobs:
       with:
         workflow-dispatch-env: ${{ github.event.inputs.environment }}
 
+    # Set environment suffix for Docker tags
+    - name: Set environment suffix
+      id: env-suffix
+      run: |
+        case "${{ steps.env.outputs.environment }}" in
+          "production")
+            echo "suffix=" >> $GITHUB_OUTPUT
+            ;;
+          "staging")
+            echo "suffix=-stg" >> $GITHUB_OUTPUT
+            ;;
+          *)
+            echo "suffix=-dev" >> $GITHUB_OUTPUT
+            ;;
+        esac
+
     # Set environment for deployment
     - name: Set deployment environment
       run: |
@@ -186,10 +202,10 @@ jobs:
         context: .
         push: true
         tags: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         labels: |
-          org.opencontainers.image.version=${{ steps.version.outputs.version }}
+          org.opencontainers.image.version=${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           org.opencontainers.image.revision=${{ github.sha }}
 
@@ -199,8 +215,8 @@ jobs:
       uses: ./.github/actions/deploy
       with:
         environment: ${{ env.DEPLOYMENT_ENV }}
-        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
-        version: ${{ steps.version.outputs.version }}
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
+        version: ${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
         platform: 'simulated'  # Can be changed to: aws-ecs, simulated
 
     # Use custom notify-success action (already uses official actions internally)
@@ -211,7 +227,7 @@ jobs:
         environment: ${{ env.DEPLOYMENT_ENV }}
         registry: ${{ env.REGISTRY }}
         image-name: ${{ env.IMAGE_NAME }}
-        version: ${{ steps.version.outputs.version }}
+        version: ${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
         github-token: ${{ github.token }}
@@ -223,7 +239,7 @@ jobs:
       uses: ./.github/actions/notify-failure
       with:
         environment: ${{ env.DEPLOYMENT_ENV }}
-        version: ${{ steps.version.outputs.version }}
+        version: ${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
         error: 'Deployment failed - check workflow logs for details'
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
