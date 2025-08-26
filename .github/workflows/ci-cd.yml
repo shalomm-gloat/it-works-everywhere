@@ -1,6 +1,6 @@
 name: CI/CD Pipeline (Refactored with Official Actions)
 
-# Explicit permissions for GitHub API access
+# Explicit permissions for GitHub API access - required for custom actions to create PR comments, issues, and push commits
 permissions:
   contents: write
   issues: write
@@ -9,10 +9,10 @@ permissions:
 
 on:
   push:
-    branches: [main, develop, staging, 'hotfix/*']
+    branches: [main, develop, staging, 'hotfix/*']  # Progressive deployment: dev → staging → prod
   pull_request:
-    branches: [main, develop, staging, 'hotfix/*']
-  workflow_dispatch:
+    branches: [main, develop, staging, 'hotfix/*']  # Version preview on PRs
+  workflow_dispatch:  # Manual deployment trigger for emergency rollbacks or specific environments
     inputs:
       environment:
         description: 'Environment to deploy to'
@@ -26,13 +26,15 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/it-works-on-my-machine
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/it-works-on-my-machine  # Dynamic image name based on Docker Hub username
 
 jobs:
   versioning:
     runs-on: ubuntu-latest
     name: 'Version Management'
+    # Only run versioning on branches that can trigger deployments (not on feature branches)
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/hotfix/')
+    # Environment mapping: main/hotfix → production, staging → staging, develop → development
     environment: ${{ github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/staging' && 'staging' || (startsWith(github.ref, 'refs/heads/hotfix/') && 'production' || 'development')) }}
     outputs:
       release-type: ${{ steps.version.outputs.release-type }}
@@ -43,7 +45,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history needed for semantic versioning
+          fetch-depth: 0  # Full history needed for conventional commit analysis since last tag
 
       - name: Debug event info
         run: |
@@ -64,10 +66,11 @@ jobs:
           echo "old-version: ${{ steps.version.outputs.old-version }}"
           echo "release-type: ${{ steps.version.outputs.release-type }}"
 
+  # Create a version preview for the PR that will be used to test the versioning logic
   version-preview:
     runs-on: ubuntu-latest
     name: 'Version Preview'
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request'  # Only show version preview on PRs, not direct pushes
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,16 +90,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Replace custom test-quality action with official actions
+    # Validate YAML syntax for workflow files and custom actions
+    - name: Validate YAML
+      uses: ./.github/actions/validate-yaml
+
+    # Use official actions instead of custom test-quality action for better maintainability
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'yarn'
+        cache: 'yarn'  # Cache dependencies for faster builds
 
     - name: Install dependencies
       run: yarn install --frozen-lockfile
 
+    # Quality gates: linting, testing, security audit, health check
     - name: Run linting
       run: yarn lint
 
@@ -109,9 +117,9 @@ jobs:
     - name: Health check
       run: |
         chmod +x test.sh
-        ./test.sh  # Assignment constraint: only functional testing available
+        ./test.sh  # Assignment constraint: only functional testing available via existing test.sh
 
-    # Use custom notify-failure action (already uses official actions internally)
+    # Notify on test failures (sends email + GitHub notification)
     - name: Notify failure
       if: failure()
       uses: ./.github/actions/notify-failure
@@ -127,8 +135,8 @@ jobs:
   build:
     name: Build & Deploy
     runs-on: ubuntu-latest
-    needs: [test, versioning]
-    # CRITICAL: This environment field is required for GitHub Actions to access secrets and determine deployment target
+    needs: [test, versioning]  # Ensure tests pass and versioning is calculated before building
+    # CRITICAL: Environment field required for GitHub Actions to access secrets and determine deployment target
     # Without this, Docker login fails because secrets are not accessible
     environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/develop' && 'staging' || (github.ref == 'refs/heads/staging' && 'staging' || (startsWith(github.ref, 'refs/heads/hotfix/') && 'production' || 'development')))) }}
     
@@ -138,7 +146,7 @@ jobs:
       with:
         fetch-depth: 0  # Full history needed for semantic versioning
 
-    # Update version if needed
+    # Update version if needed (only on main branch with conventional commits)
     - name: Bump package version
       if: needs.versioning.outputs.should-bump == 'true'
       uses: ./.github/actions/bump-package-version
@@ -148,7 +156,7 @@ jobs:
 
 
 
-    # Use version from versioning job (conventional commits)
+    # Use version from versioning job (conventional commits) or current package.json
     - name: Set version for deployment
       id: version
       run: |
@@ -158,26 +166,26 @@ jobs:
           echo "version=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
         fi
 
-    # Custom action for environment mapping logic
+    # Custom action for environment mapping logic (branch → environment)
     - name: Get target environment
       id: env
       uses: ./.github/actions/get-environment
       with:
         workflow-dispatch-env: ${{ github.event.inputs.environment }}
 
-    # Set environment suffix for Docker tags
+    # Set environment suffix for Docker tags (prod gets clean version, others get -env suffix)
     - name: Set environment suffix
       id: env-suffix
       run: |
         case "${{ steps.env.outputs.environment }}" in
           "production")
-            echo "suffix=" >> $GITHUB_OUTPUT
+            echo "suffix=" >> $GITHUB_OUTPUT  # Production gets clean version (v1.1.0)
             ;;
           "staging")
-            echo "suffix=-stg" >> $GITHUB_OUTPUT
+            echo "suffix=-stg" >> $GITHUB_OUTPUT  # Staging gets -stg suffix (v1.1.0-stg)
             ;;
           *)
-            echo "suffix=-dev" >> $GITHUB_OUTPUT
+            echo "suffix=-dev" >> $GITHUB_OUTPUT  # Development gets -dev suffix (v1.1.0-dev)
             ;;
         esac
 
@@ -186,7 +194,7 @@ jobs:
       run: |
         echo "DEPLOYMENT_ENV=${{ steps.env.outputs.environment }}" >> $GITHUB_ENV
 
-    # Replace custom docker-build with official Docker actions
+    # Use official Docker actions instead of custom docker-build for better maintainability
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -209,7 +217,7 @@ jobs:
           org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           org.opencontainers.image.revision=${{ github.sha }}
 
-    # Platform-agnostic deployment with extensibility
+    # Platform-agnostic deployment with extensibility (supports AWS ECS, simulated, etc.)
     - name: Deploy application
       id: deploy
       uses: ./.github/actions/deploy
@@ -217,9 +225,9 @@ jobs:
         environment: ${{ env.DEPLOYMENT_ENV }}
         image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
         version: ${{ steps.version.outputs.version }}${{ steps.env-suffix.outputs.suffix }}
-        platform: 'simulated'  # Can be changed to: aws-ecs, simulated
+        platform: 'simulated'  # Can be changed to: aws-ecs, simulated, kubernetes, etc.
 
-    # Use custom notify-success action (already uses official actions internally)
+    # Use custom notify-success action (sends email + GitHub notification)
     - name: Notify success
       if: success()
       uses: ./.github/actions/notify-success
@@ -233,7 +241,7 @@ jobs:
         github-token: ${{ github.token }}
         email-to: ${{ github.event.pusher.email }}
 
-    # Use custom notify-failure action (already uses official actions internally)
+    # Use custom notify-failure action (sends email + GitHub notification)
     - name: Notify failure
       if: failure()
       uses: ./.github/actions/notify-failure

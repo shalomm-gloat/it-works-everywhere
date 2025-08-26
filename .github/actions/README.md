@@ -14,6 +14,10 @@ This directory contains reusable GitHub Actions that break down the CI/CD pipeli
 - **Outputs**: environment
 - **Usage**: Used in CI workflow for environment mapping
 
+### `validate-yaml/`
+- **Purpose**: Validate YAML syntax for workflows and custom actions
+- **Usage**: Used in test job to catch YAML errors early
+
 ### `deploy/`
 - **Purpose**: Platform-agnostic application deployment
 - **Platforms**: AWS ECS, simulated
