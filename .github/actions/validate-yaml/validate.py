@@ -12,15 +12,30 @@ def validate_yaml_file(file_path, required_fields, file_type):
     """Validate a YAML file for required fields."""
     try:
         with open(file_path, 'r') as f:
-            data = yaml.safe_load(f)
+            content = f.read()
+            data = yaml.safe_load(content)
         
         if not data:
             print(f'❌ Empty or invalid YAML file: {file_path}')
             return False
         
+        # Debug: print the actual keys found
+        actual_keys = list(data.keys())
+        print(f'🔍 Found keys in {file_path}: {actual_keys}')
+        
+        # Check if 'on' is being interpreted as True (common YAML issue)
+        if True in actual_keys and 'on' not in actual_keys:
+            print(f'⚠️  Warning: "on" field is being interpreted as True in {file_path}')
+            print(f'   This might be due to YAML syntax issues or hidden characters')
+            # For now, let's be more lenient and accept True as 'on'
+            if 'on' in required_fields:
+                required_fields = [field if field != 'on' else True for field in required_fields]
+        
         for field in required_fields:
             if field not in data:
                 print(f'❌ Missing required field "{field}" in {file_type}: {file_path}')
+                print(f'   Expected: {required_fields}')
+                print(f'   Found: {actual_keys}')
                 return False
         
         print(f'✅ {file_type} structure is valid: {file_path}')
