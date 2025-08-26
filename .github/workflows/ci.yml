@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     name: 'Version Management'
     if: github.event_name == 'pull_request'
+    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/develop' && 'staging' || (github.ref == 'refs/heads/staging' && 'staging' || 'development'))) }}
     env:
       GH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }}
     outputs:
