@@ -121,13 +121,6 @@ jobs:
       with:
         fetch-depth: 0  # Full history needed for semantic versioning
 
-    # Update version if needed
-    - name: Debug versioning outputs
-      run: |
-        echo "needs.versioning.outputs.should-bump: ${{ needs.versioning.outputs.should-bump }}"
-        echo "needs.versioning.outputs.new-version: ${{ needs.versioning.outputs.new-version }}"
-        echo "needs.versioning.outputs.old-version: ${{ needs.versioning.outputs.old-version }}"
-
     - name: Update package.json version
       if: needs.versioning.outputs.should-bump == 'true'
       run: |
@@ -147,7 +140,7 @@ jobs:
         git config user.email "actions@github.com"
         git add package.json
         git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
-        git push origin HEAD
+        git push origin ${{ github.ref }}
 
     # Custom action for semantic versioning with environment-specific suffixes
     - name: Generate version tag
