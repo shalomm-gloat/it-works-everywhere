@@ -59,7 +59,7 @@ This directory contains reusable GitHub Actions that break down the CI/CD pipeli
 - **Maintainability**: Changes only need to be made in one place
 - **Testability**: Individual actions can be tested independently
 
-## Usage Example
+## Usage Example 
 
 ```yaml
 - name: Generate version

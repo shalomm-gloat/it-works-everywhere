@@ -23,12 +23,15 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Install semver dependency
+      shell: bash
+      run: yarn add semver
+
     - name: Check PR labels
       id: check_pr_label
       shell: bash
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
-        GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         LABELS=$(gh pr view $PR_URL --json labels --jq '.labels[] | select((.name=="version:major") or (.name=="version:minor") or (.name=="version:patch")) | .name')
         NUMBER_OF_LABELS=$(echo "$LABELS" | wc -w)
