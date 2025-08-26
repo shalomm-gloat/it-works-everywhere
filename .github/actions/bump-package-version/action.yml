@@ -14,6 +14,8 @@ runs:
   steps:
     - name: Update package.json version
       shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
       run: |
         NEW_VERSION='${{ inputs.new-version }}'
         echo "Updating package.json to version: $NEW_VERSION"
@@ -32,10 +34,14 @@ runs:
         echo "Ref name: ${{ github.ref_name }}"
         echo "Ref: ${{ github.ref }}"
         
-        # Get the correct branch name for PRs
+        # Get the correct branch name for PRs using GitHub CLI
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          PR_HEAD_REF="${{ github.event.pull_request.head.ref }}"
-          echo "PR head ref from event: $PR_HEAD_REF"
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          echo "PR number: $PR_NUMBER"
+          
+          # Get PR details using GitHub CLI
+          PR_HEAD_REF=$(gh pr view $PR_NUMBER --json headRefName --jq '.headRefName')
+          echo "PR head ref from CLI: $PR_HEAD_REF"
         else
           PR_HEAD_REF=""
         fi
