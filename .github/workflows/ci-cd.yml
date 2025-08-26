@@ -90,6 +90,39 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # Validate YAML syntax for workflow files
+    - name: Validate YAML syntax
+      run: |
+        echo "🔍 Validating YAML syntax..."
+        
+        # Check main CI/CD workflow
+        echo "Validating .github/workflows/ci-cd.yml..."
+        python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci-cd.yml'))" || exit 1
+        
+        # Check rollback workflow
+        echo "Validating .github/workflows/rollback.yml..."
+        python3 -c "import yaml; yaml.safe_load(open('.github/workflows/rollback.yml'))" || exit 1
+        
+        # Check all custom action YAML files
+        echo "Validating custom action YAML files..."
+        find .github/actions -name "action.yml" -exec sh -c '
+          echo "Validating {}..."
+          python3 -c "import yaml; yaml.safe_load(open('\''{}'\''))" || exit 1
+        ' \;
+        
+        echo "✅ All YAML files are valid!"
+        
+        # Additional GitHub Actions specific validation
+        echo "🔍 Validating GitHub Actions syntax..."
+        
+        # Check for required fields in workflow files
+        for workflow in .github/workflows/*.yml; do
+          echo "Validating workflow structure: $workflow"
+          python3 -c "import yaml, sys; data = yaml.safe_load(open('$workflow')); assert 'on' in data, 'Missing required field: on'; assert 'jobs' in data, 'Missing required field: jobs'; print('✅ Workflow structure is valid')"
+        done
+        
+        echo "✅ All GitHub Actions validations passed!"
+
     # Use official actions instead of custom test-quality action for better maintainability
     - name: Setup Node.js
       uses: actions/setup-node@v4
