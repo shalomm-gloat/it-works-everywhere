@@ -6,6 +6,7 @@ Updates package.json version and commits the changes back to the repository.
 
 - **Version Update**: Updates package.json with new version
 - **Git Operations**: Commits and pushes changes automatically
+- **GitHub Tags**: Creates annotated tags for each version
 - **Branch Aware**: Handles both PRs and direct pushes correctly
 - **Skip CI**: Prevents triggering new workflow runs
 
@@ -38,6 +39,7 @@ None
 - **Pushes to correct branch**:
   - PR events: pushes to PR source branch
   - Direct pushes: pushes to target branch
+- **Creates GitHub tag** with format "vX.X.X"
 - **Skips CI** to prevent infinite loops
 
 ## Dependencies

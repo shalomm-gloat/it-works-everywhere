@@ -1,12 +1,12 @@
 # Version Management Action
 
-Detects PR labels and calculates new version based on semantic versioning.
+Analyzes conventional commits and calculates new version based on semantic versioning.
 
 ## Features
 
-- **PR Label Detection**: Automatically detects version labels on pull requests
+- **Conventional Commit Analysis**: Automatically analyzes commit messages since last tag
 - **Semantic Versioning**: Uses semver library for proper version calculation
-- **Label Validation**: Ensures exactly one version label is present
+- **Main Branch Only**: Version bumps only on production releases (main branch)
 - **Flexible Outputs**: Provides all version information for downstream jobs
 
 ## Inputs
@@ -24,12 +24,12 @@ Detects PR labels and calculates new version based on semantic versioning.
 | `old-version` | Current version | `1.0.0` |
 | `should-bump` | Whether version should be bumped | `true` |
 
-## Supported Labels
+## Conventional Commit Types
 
-- **`version:major`** → Major version bump (1.0.0 → 2.0.0)
-- **`version:minor`** → Minor version bump (1.0.0 → 1.1.0)
-- **`version:patch`** → Patch version bump (1.0.0 → 1.0.1)
-- **No label** → No version bump (uses current version)
+- **`BREAKING CHANGE` or `major`** → Major version bump (1.0.0 → 2.0.0)
+- **`feat:`** → Minor version bump (1.0.0 → 1.1.0)
+- **`fix:`** → Patch version bump (1.0.0 → 1.0.1)
+- **`docs:`, `chore:`, etc.** → No version bump (defaults to patch on main)
 
 ## Usage
 
@@ -41,22 +41,36 @@ Detects PR labels and calculates new version based on semantic versioning.
     github-token: ${{ github.token }}
 ```
 
+## Behavior
+
+### **Main Branch (Production)**
+- **Analyzes commits** since last tag using `git log`
+- **Determines bump type** based on conventional commit messages
+- **Bumps version** and sets `should-bump=true`
+- **Creates GitHub tags** automatically
+
+### **Other Branches (Develop/Staging)**
+- **No version bump** - maintains same version
+- **Sets `should-bump=false`**
+- **Same version** flows through environments
+
 ## Error Handling
 
-- **Multiple labels**: Fails if more than one version label is found
-- **No labels**: Gracefully handles PRs without version labels
-- **Invalid labels**: Validates label format and content
+- **No conventional commits**: Defaults to patch bump on main
+- **No commits since last tag**: Defaults to patch bump
+- **Invalid commit format**: Gracefully handles non-conventional commits
 
 ## Integration
 
 This action is designed to work with the main CI pipeline:
-1. **Detects PR labels** and calculates new version
+1. **Analyzes conventional commits** and calculates new version
 2. **Outputs version info** for build job
 3. **Enables conditional version bumping** in deployment
 
 ## Benefits
 
-- **Reusable**: Can be used in multiple workflows
+- **Industry Standard**: Uses conventional commits (widely adopted)
+- **Automatic**: No manual intervention required
 - **Maintainable**: Centralized version logic
 - **Robust**: Handles edge cases and validation
 - **Clear**: Provides explicit outputs for downstream jobs
