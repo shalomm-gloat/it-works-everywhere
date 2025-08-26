@@ -84,4 +84,5 @@ runs:
         git config user.email "actions@github.com"
         git add package.json
         git commit -m "chore: bump version to ${NEW_VERSION} [skip ci]"
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
         git push origin HEAD
