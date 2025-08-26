@@ -1,18 +1,24 @@
 name: 'Notify Failure'
-description: 'Send failure notifications for deployment'
+description: 'Send failure notifications via email and GitHub comments'
 
 inputs:
   environment:
-    description: 'Environment that failed deployment'
+    description: 'Deployment environment'
     required: true
   version:
-    description: 'Version that failed to deploy'
-    required: false
+    description: 'Deployed version'
+    required: true
+  error:
+    description: 'Error message'
+    required: true
   brevo-smtp-user:
     description: 'Brevo SMTP username'
     required: true
   brevo-smtp-key:
     description: 'Brevo SMTP password'
+    required: true
+  github-token:
+    description: 'GitHub token for API access'
     required: true
 
 runs:
@@ -21,7 +27,7 @@ runs:
     - name: Create failure notification
       uses: actions/github-script@v6
       env:
-        GH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }}
+        GH_TOKEN: ${{ inputs.github-token }}
       with:
         script: |
           // Create environment display name (capitalized)

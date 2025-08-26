@@ -83,8 +83,10 @@ jobs:
       with:
         environment: development
         version: 'N/A'
+        error: 'Test job failed - check workflow logs for details'
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
+        github-token: ${{ secrets.GH_AUTH_TOKEN }}
 
   build:
     name: Build & Deploy
@@ -173,13 +175,16 @@ jobs:
         version: ${{ steps.version.outputs.version }}
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
+        github-token: ${{ secrets.GH_AUTH_TOKEN }}
 
     # Use custom notify-failure action (already uses official actions internally)
     - name: Notify failure
       if: failure()
       uses: ./.github/actions/notify-failure
       with:
-        environment: ${{ steps.env.outputs.environment }}
+        environment: ${{ env.DEPLOYMENT_ENV }}
         version: ${{ steps.version.outputs.version }}
+        error: 'Deployment failed - check workflow logs for details'
         brevo-smtp-user: ${{ secrets.BREVO_SMTP_USER }}
         brevo-smtp-key: ${{ secrets.BREVO_SMTP_KEY }}
+        github-token: ${{ secrets.GH_AUTH_TOKEN }}
