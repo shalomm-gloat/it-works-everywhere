@@ -32,16 +32,24 @@ runs:
         echo "Ref name: ${{ github.ref_name }}"
         echo "Ref: ${{ github.ref }}"
         
+        # Get the correct branch name for PRs
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          PR_HEAD_REF="${{ github.event.pull_request.head.ref }}"
+          echo "PR head ref from event: $PR_HEAD_REF"
+        else
+          PR_HEAD_REF=""
+        fi
+        
         # Commit and push the version bump
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         git add package.json
         git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
         
-        # Push to the correct branch (PR head or direct branch)
-        if [ "${{ github.event_name }}" = "pull_request" ] && [ -n "${{ github.head_ref }}" ]; then
-          echo "Pushing to PR head branch: ${{ github.head_ref }}"
-          git push origin ${{ github.head_ref }}
+        # Push to the correct branch
+        if [ "${{ github.event_name }}" = "pull_request" ] && [ -n "$PR_HEAD_REF" ]; then
+          echo "Pushing to PR head branch: $PR_HEAD_REF"
+          git push origin $PR_HEAD_REF
         else
           echo "Pushing to direct branch: ${{ github.ref_name }}"
           git push origin ${{ github.ref_name }}
