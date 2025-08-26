@@ -42,16 +42,31 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
       with:
         script: |
+          // Determine environment suffix based on target branch
+          const targetBranch = context.payload.pull_request.base.ref;
+          let envSuffix = '';
+          
+          if (targetBranch === 'main') {
+            envSuffix = '-prod';
+          } else if (targetBranch === 'staging') {
+            envSuffix = '-stg';
+          } else if (targetBranch === 'develop') {
+            envSuffix = '-dev';
+          } else {
+            envSuffix = '-dev'; // default
+          }
+
           const message = `## 📋 Version Preview
 
           **Current Version:** ${{ steps.current-version.outputs.result }}
           **Preview Version:** ${{ steps.preview-version.outputs.result }}
-          **Bump Type:** patch (default for main/staging)
+          **Target Branch:** ${targetBranch}
+          **Bump Type:** patch (default for ${targetBranch})
 
           ### What will happen on merge:
           - Package.json version will be updated to **${{ steps.preview-version.outputs.result }}**
-          - Docker image will be tagged as **v${{ steps.preview-version.outputs.result }}-prod**
-          - Changes will be committed and pushed to main
+          - Docker image will be tagged as **v${{ steps.preview-version.outputs.result }}${envSuffix}**
+          - Changes will be committed and pushed to ${targetBranch}
 
           > 💡 This is a preview only. No changes will be made to this PR.`;
 
