@@ -37,6 +37,64 @@ git checkout main && git merge hotfix/critical-fix && git push origin main
 - **Rollback Capability**: Emergency rollback workflow (`rollback.yml`)
 - **Testing Guide**: Comprehensive testing instructions (`INTERVIEWER-TESTING-GUIDE.md`)
 
+### **🔄 CI/CD Workflow Diagram**
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           CI/CD PIPELINE FLOW                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   PUSH/PR   │───▶│  VERSIONING │───▶│    TEST     │───▶│    BUILD    │
+│             │    │             │    │             │    │             │
+│ • main      │    │ • Analyze   │    │ • Linting   │    │ • Docker    │
+│ • develop   │    │   commits   │    │ • Tests     │    │   Build     │
+│ • staging   │    │ • Bump      │    │ • Security  │    │ • Push      │
+│ • hotfix/*  │    │   version   │    │ • Health    │    │ • Deploy    │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ VERSION     │    │ ENVIRONMENT │    │ QUALITY     │    │ NOTIFICATION│
+│ PREVIEW     │    │ MAPPING     │    │ GATES       │    │             │
+│             │    │             │    │             │    │             │
+│ • PR        │    │ • main→prod │    │ • Pass/Fail │    │ • Email     │
+│   comments  │    │ • staging→  │    │ • Block     │    │ • GitHub    │
+│ • Preview   │    │   staging   │    │   pipeline  │    │   comments  │
+│   version   │    │ • develop→  │    │ • Rollback  │    │ • Success/  │
+│             │    │   dev       │    │   on fail   │    │   Failure   │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           DEPLOYMENT ENVIRONMENTS                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ DEVELOPMENT │───▶│   STAGING   │───▶│ PRODUCTION  │
+│             │    │             │    │             │
+│ • develop   │    │ • staging   │    │ • main      │
+│ • v1.1.0-dev│    │ • v1.1.0-stg│    │ • v1.1.0    │
+│ • Simulated │    │ • Simulated │    │ • Simulated │
+│   Deploy    │    │   Deploy    │    │   Deploy    │
+└─────────────┘    └─────────────┘    └─────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           VERSIONING STRATEGY                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ CONVENTIONAL│    │   BRANCH    │    │   RESULT    │
+│   COMMITS   │    │   MERGE     │    │             │
+│             │    │             │    │             │
+│ • feat:     │    │ • develop→  │    │ • 1.0.10→   │
+│   → minor   │    │   staging   │    │   1.1.0     │
+│ • fix:      │    │ • staging→  │    │ • GitHub    │
+│   → patch   │    │   main      │    │   tag       │
+│ • BREAKING  │    │ • Only main │    │ • Docker    │
+│   → major   │    │   bumps     │    │   image     │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+
 ## 🤔 Key Decisions & Reasoning
 
 ### **Conventional Commits Over PR Labels**
