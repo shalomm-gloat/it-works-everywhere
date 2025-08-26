@@ -24,8 +24,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Notify deployment success
+    - name: Create deployment notification
       uses: actions/github-script@v6
+      env:
+        GH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }}
       with:
         script: |
           // Create environment display name (capitalized)

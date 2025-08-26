@@ -18,61 +18,47 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Notify deployment failure
+    - name: Create failure notification
       uses: actions/github-script@v6
+      env:
+        GH_TOKEN: ${{ secrets.GH_AUTH_TOKEN }}
       with:
         script: |
           // Create environment display name (capitalized)
           const environment = '${{ inputs.environment }}';
           const environmentName = environment.charAt(0).toUpperCase() + environment.slice(1);
           
-          // Create failure notification with fallback values for missing data
+          // Create failure notification with key details
           const message = `❌ **${environmentName} Deployment Failed**
           
           **Repository**: ${context.repo.owner}/${context.repo.repo}
-          **Branch**: ${context.ref_name || 'N/A'}
-          **Version**: ${{ inputs.version || 'N/A' }}
+          **Branch**: ${context.ref_name}
+          **Version**: ${{ inputs.version }}
           **Commit**: ${context.sha.substring(0, 7)}
           **Triggered by**: ${context.actor}
-          **Workflow**: ${context.workflow}
-          **Run ID**: ${context.runId}
+          **Error**: ${{ inputs.error }}
           
-          🚨 Check the logs for details: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          🔧 Please check the [workflow logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for details.`;
           
           // Log notification
-          console.log('🚨 FAILURE NOTIFICATION:');
+          console.log('🚨 DEPLOYMENT FAILURE NOTIFICATION:');
           console.log(message);
           
-          // Create GitHub issue for failure tracking (optional - depends on permissions)
-          try {
-            const issueResponse = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `🚨 ${environmentName} Deployment Failed - ${context.sha.substring(0, 7)}`,
-              body: `## ${environmentName} Deployment Failure
-            
-              **Repository**: ${context.repo.owner}/${context.repo.repo}
-              **Branch**: ${context.ref_name || 'N/A'}
-              **Version**: ${{ inputs.version || 'N/A' }}
-              **Commit**: ${context.sha}
-              **Triggered by**: ${context.actor}
-              **Workflow**: ${context.workflow}
-              **Run ID**: ${context.runId}
-              
-              **Logs**: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
-              
-              ## Next Steps
-              - [ ] Investigate failure cause
-              - [ ] Fix issues in development
-              - [ ] Re-run deployment
-              - [ ] Consider rollback if needed`,
-              labels: ['deployment-failure', 'urgent', 'ci-cd']
-            });
-            console.log(`✅ Failure issue created: #${issueResponse.data.number}`);
-          } catch (error) {
-            console.log('⚠️ Could not create failure issue - this is normal if the workflow lacks issue creation permissions');
-            console.log('Error:', error.message);
-            console.log('The failure notification was still logged above for visibility');
+          // Create GitHub comment for tracking (only for pull requests)
+          if (context.eventName === 'pull_request') {
+            try {
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: message
+              });
+              console.log('✅ Failure comment created on PR');
+            } catch (error) {
+              // Graceful fallback if permissions are insufficient
+              console.log('⚠️ Could not create PR comment (this is normal for some permissions)');
+              console.log('Error details:', error.message);
+            }
           }
 
     - name: Send failure email notification
